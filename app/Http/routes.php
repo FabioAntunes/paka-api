@@ -15,6 +15,17 @@ Route::get('/', 'WelcomeController@index');
 
 Route::get('home', 'HomeController@index');
 
+Route::group(['prefix' => 'api'], function()
+{
+
+	Route::resource('user','API\UserController');
+	Route::resource('categories','API\CategoriesController');
+	Route::resource('expenses','API\ExpensesController');
+	Route::resource('friends','API\FriendsController');
+	
+
+});
+
 Route::controllers([
 	'auth' => 'Auth\AuthController',
 	'password' => 'Auth\PasswordController',
