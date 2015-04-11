@@ -11,7 +11,10 @@ class AppServiceProvider extends ServiceProvider {
 	 */
 	public function boot()
 	{
-		//
+		\Auth::extend('custom', function($app)
+		{
+			// Return implementation of Illuminate\Contracts\Auth\UserProvider
+		});
 	}
 
 	/**

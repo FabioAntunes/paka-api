@@ -144,6 +144,7 @@ return [
 		'App\Providers\ConfigServiceProvider',
 		'App\Providers\EventServiceProvider',
 		'App\Providers\RouteServiceProvider',
+		'App\Providers\TokenizerServiceProvider',
 		'Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider',
 
 	],
@@ -193,6 +194,7 @@ return [
 		'URL'       => 'Illuminate\Support\Facades\URL',
 		'Validator' => 'Illuminate\Support\Facades\Validator',
 		'View'      => 'Illuminate\Support\Facades\View',
+		'Tokenizer' => 'App\Paka\Facades\Tokenizer',
 
 	],
 
