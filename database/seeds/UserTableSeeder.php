@@ -15,7 +15,7 @@ class UserTableSeeder extends Seeder {
 	{
 		Model::unguard();
 
-        User::create([
+        $user1 = User::create([
           'name' => 'Fabio',
           'email' => 'fabioantuness@gmail.com',
           'password' => bcrypt('paka'),
