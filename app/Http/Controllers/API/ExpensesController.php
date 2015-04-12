@@ -1,11 +1,21 @@
 <?php namespace App\Http\Controllers\API;
 
 use App\Http\Requests;
-use App\Http\Controllers\Controller;
+use App\Paka\Transformers\ExpensesTransformer;
 
 use Illuminate\Http\Request;
 
 class ExpensesController extends ApiController {
+
+    /**
+     * @var \App\Paka\Transformers\ExpensesTransformer
+     */
+	protected $expensesTransformer;
+
+    public function __construct(){
+        $this->middleware('auth.token');
+        $this->expensesTransformer = new ExpensesTransformer();
+    }
 
 	/**
 	 * Display a listing of the resource.
@@ -14,7 +24,7 @@ class ExpensesController extends ApiController {
 	 */
 	public function index()
 	{
-		//
+		return $this->respond($this->expensesTransformer->currentMonth());
 	}
 
 	/**
@@ -27,14 +37,15 @@ class ExpensesController extends ApiController {
 		//
 	}
 
-	/**
-	 * Store a newly created resource in storage.
-	 *
-	 * @return Response
-	 */
-	public function store()
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param Request $request
+     * @return Response
+     */
+	public function store(Request $request)
 	{
-		//
+        return $this->respond($this->expensesTransformer->insert($request->all()));
 	}
 
 	/**
