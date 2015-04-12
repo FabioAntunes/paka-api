@@ -2,14 +2,18 @@
 
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
+use App\Paka\Transformers\CategoriesTransformer;
 
 use Illuminate\Http\Request;
 
-class CategoriesController extends Controller {
+class CategoriesController extends ApiController{
+
+    protected $categoriesTransformer;
 
 	public function __construct()
 	{
 		$this->middleware('auth.token');
+        $this->categoriesTransformer = new CategoriesTransformer();
     }
 
 	/**
@@ -17,9 +21,9 @@ class CategoriesController extends Controller {
 	 *
 	 * @return Response
 	 */
-	public function index($user)
+	public function index()
 	{
-		echo 'yolo';
+        return $this->respond($this->categoriesTransformer->generic());
 	}
 
 	/**
@@ -32,14 +36,15 @@ class CategoriesController extends Controller {
 		//
 	}
 
-	/**
-	 * Store a newly created resource in storage.
-	 *
-	 * @return Response
-	 */
-	public function store()
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param Request $request
+     * @return Response
+     */
+	public function store(Request $request)
 	{
-		//
+        return $this->respond($this->categoriesTransformer->insert($request->all()));
 	}
 
 	/**

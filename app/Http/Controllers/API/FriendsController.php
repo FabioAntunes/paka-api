@@ -5,7 +5,7 @@ use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
 
-class FriendsController extends Controller {
+class FriendsController extends ApiController {
 
 	/**
 	 * Display a listing of the resource.

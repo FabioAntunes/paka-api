@@ -5,7 +5,7 @@ use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
 
-class ExpensesController extends Controller {
+class ExpensesController extends ApiController {
 
 	/**
 	 * Display a listing of the resource.

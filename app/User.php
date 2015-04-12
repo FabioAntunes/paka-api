@@ -13,13 +13,13 @@ use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\User[] $friends
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Expense[] $expenses
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Token[] $tokens
- * @property integer $id 
- * @property string $name 
- * @property string $email 
- * @property string $password 
- * @property string $remember_token 
- * @property \Carbon\Carbon $created_at 
- * @property \Carbon\Carbon $updated_at 
+ * @property integer $id
+ * @property string $name
+ * @property string $email
+ * @property string $password
+ * @property string $remember_token
+ * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
  * @method static \Illuminate\Database\Query\Builder|\App\User whereId($value)
  * @method static \Illuminate\Database\Query\Builder|\App\User whereName($value)
  * @method static \Illuminate\Database\Query\Builder|\App\User whereEmail($value)
@@ -55,7 +55,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 
 	public function categories()
 	{
-        return $this->hasMany('App\Category');
+        return $this->hasMany('App\Category')->orWhereNull('categories.user_id');
     }
 
     public function friends()
