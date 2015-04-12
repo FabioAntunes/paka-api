@@ -19,9 +19,9 @@ Route::group(['prefix' => 'api'], function()
 {
 
 	Route::resource('user','API\UserController');
-	Route::resource('user.categories','API\UserCategoriesController');
-	Route::resource('user.expenses','API\UserExpensesController');
-	Route::resource('user.friends','API\UserFriendsController');
+	Route::resource('categories','API\CategoriesController');
+	Route::resource('expenses','API\ExpensesController');
+	Route::resource('friends','API\FriendsController');
 	
 
 });

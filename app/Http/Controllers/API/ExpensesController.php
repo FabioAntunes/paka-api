@@ -5,7 +5,7 @@ use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
 
-class UserFriendsController extends Controller {
+class ExpensesController extends Controller {
 
 	/**
 	 * Display a listing of the resource.

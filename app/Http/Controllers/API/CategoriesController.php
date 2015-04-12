@@ -5,7 +5,7 @@ use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
 
-class UserCategoriesController extends Controller {
+class CategoriesController extends Controller {
 
 	public function __construct()
 	{
@@ -17,7 +17,7 @@ class UserCategoriesController extends Controller {
 	 *
 	 * @return Response
 	 */
-	public function index()
+	public function index($user)
 	{
 		echo 'yolo';
 	}
