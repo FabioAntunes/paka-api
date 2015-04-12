@@ -5,7 +5,12 @@ use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
 
-class CategoriesController extends Controller {
+class UserCategoriesController extends Controller {
+
+	public function __construct()
+	{
+		$this->middleware('auth.token');
+    }
 
 	/**
 	 * Display a listing of the resource.
@@ -14,7 +19,7 @@ class CategoriesController extends Controller {
 	 */
 	public function index()
 	{
-		//
+		echo 'yolo';
 	}
 
 	/**
