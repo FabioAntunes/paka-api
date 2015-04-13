@@ -36,6 +36,22 @@ class ExpensesTransformer extends Transformer {
     }
 
     /**
+     * Shares the expense with the users
+     *
+     * @param $expenseId
+     * @param $user
+     * @return array
+     */
+    public function share($expenseId, $users)
+    {
+        $expense = Expense::find($expenseId);
+
+        $expense->users()->attach($users);
+
+        return $this->transform($expense);
+    }
+
+    /**
      * Returns user's expenses from the current month
      *
      * @return array
