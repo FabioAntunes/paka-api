@@ -27,28 +27,37 @@ class ExpensesTransformer extends Transformer {
         $expense = Expense::create($data);
 
         $relationAttributes = [
-            'is_owner' => true,
+            'is_owner'    => true,
             'permissions' => 4,
         ];
 
         Tokenizer::getUser()->expenses()->attach($expense->id, $relationAttributes);
+
         return $this->transform($expense);
     }
 
     /**
      * Shares the expense with the users
      *
-     * @param $expenseId
-     * @param $user
+     * @param int $expenseId
+     * @param array $users
      * @return array
      */
     public function share($expenseId, $users)
     {
         $expense = Expense::find($expenseId);
 
-        $expense->users()->attach($users);
+        try
+        {
+            $expense->users()->attach($users);
 
-        return $this->transform($expense);
+            return $this->transform($expense);
+
+        } catch (\Exception $e)
+        {
+            return false;
+        }
+
     }
 
     /**

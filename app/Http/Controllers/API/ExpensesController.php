@@ -1,6 +1,6 @@
 <?php namespace App\Http\Controllers\API;
 
-use App\Http\Requests;
+use App\Http\Requests\ExpenseRequest;
 use App\Paka\Transformers\ExpensesTransformer;
 
 use Illuminate\Http\Request;
@@ -40,10 +40,10 @@ class ExpensesController extends ApiController {
     /**
      * Store a newly created resource in storage.
      *
-     * @param Request $request
+     * @param ExpenseRequest|Request $request
      * @return Response
      */
-	public function store(Request $request)
+	public function store(ExpenseRequest $request)
 	{
         return $this->respond($this->expensesTransformer->insert($request->all()));
 	}
