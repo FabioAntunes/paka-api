@@ -8,24 +8,14 @@ class CategoriesTransformer extends Transformer {
     /**
      * Creates a new category for the current user
      *
-     * @param $data
+     * @param $name
      * @return array
      */
-    public function insert($data)
+    public function insert($name)
     {
-        $category = Category::create($data);
+        $category = Category::create(['name' => $name]);
 
         return $this->transform(Tokenizer::getUser()->categories()->save($category));
-    }
-
-    /**
-     * Returns generic and user's categories combined
-     *
-     * @return array
-     */
-    public function combined()
-    {
-        return $this->transformCollection(Tokenizer::getUser()->categories->all());
     }
 
     /**
@@ -33,11 +23,38 @@ class CategoriesTransformer extends Transformer {
      *
      * @return array with categories
      */
-    public function generic()
+    public function all()
     {
-        return $this->transformCollection(Category::has('user', '<', 1)->get()->all());
+        return $this->transformCollection(Tokenizer::getUser()->categories()->get()->all());
     }
 
+    /**
+     * Updates the category with the given id
+     *
+     * @param $id
+     * @param $name
+     * @return array
+     */
+    public function update($id, $name)
+    {
+        $category = Category::find($id);
+
+        $category->name = $name;
+        $category->save();
+
+        return $this->transform($category);
+    }
+
+    /**
+     * Destroys the category with the given id
+     *
+     * @param $id
+     * @return int
+     */
+    public function destroy($id)
+    {
+        return Category::destroy($id);
+    }
 
     /**
      * @param \App\Category $category

@@ -9,6 +9,9 @@ use Illuminate\Http\Request;
 
 class CategoriesController extends ApiController {
 
+    /**
+     * @var \App\Paka\Transformers\CategoriesTransformer
+     */
     protected $categoriesTransformer;
 
     public function __construct()
@@ -24,17 +27,7 @@ class CategoriesController extends ApiController {
      */
     public function index()
     {
-        return $this->respond($this->categoriesTransformer->generic());
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return Response
-     */
-    public function create()
-    {
-        //
+        return $this->respond($this->categoriesTransformer->all());
     }
 
     /**
@@ -45,40 +38,19 @@ class CategoriesController extends ApiController {
      */
     public function store(CategoryRequest $request)
     {
-        return $this->respond($this->categoriesTransformer->insert($request->all()));
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int $id
-     * @return Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int $id
-     * @return Response
-     */
-    public function edit($id)
-    {
-        //
+        return $this->respond($this->categoriesTransformer->insert($request->input('name')));
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  int $id
+     * @param CategoryRequest $request
      * @return Response
      */
-    public function update($id)
+    public function update($id, CategoryRequest $request)
     {
-        //
+        return $this->respond($this->categoriesTransformer->update($id, $request->input('name')));
     }
 
     /**
@@ -89,7 +61,8 @@ class CategoriesController extends ApiController {
      */
     public function destroy($id)
     {
-        //
+        $response = $this->categoriesTransformer->destroy($id);
+        return $response ? $this->respond('Category deleted successfully'): $this->respondWithError('Cannot delete category');
     }
 
 }

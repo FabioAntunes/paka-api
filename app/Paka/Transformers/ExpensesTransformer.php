@@ -114,6 +114,8 @@ class ExpensesTransformer extends Transformer {
     }
 
     /**
+     * Destroys the expense with the given id
+     *
      * @param $id
      * @return int
      */
