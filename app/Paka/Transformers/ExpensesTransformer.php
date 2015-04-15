@@ -72,12 +72,14 @@ class ExpensesTransformer extends Transformer {
     public function currentMonth()
     {
         $userId = Tokenizer::getUser()->id;
-
-//            Tokenizer::getUser()->expenses()->categories()->where('user_id', Tokenizer::getUser()->id)->get()->all());
+        
         return $this->transformCollection(
-            Expense::with(
+            Tokenizer::getUser()->expenses()->with(
                 [
-                    'users',
+                    'users' => function ($query) use ($userId)
+                    {
+                        $query->where('user_id', $userId);
+                    },
                     'categories' => function ($query) use ($userId)
                     {
                         $query->where('user_id', $userId);

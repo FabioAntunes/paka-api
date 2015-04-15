@@ -45,11 +45,11 @@ class CategoriesTransformer extends Transformer {
      */
     public function transform($category)
     {
-        return [
+        return $category ? [
             'id'         => $category->id,
             'name'       => $category->name,
             'created_at' => $category->created_at,
             'update_at'  => $category->updated_at,
-        ];
+        ] : [];
     }
 }
