@@ -17,14 +17,16 @@ class ExpensesController extends ApiController {
         $this->expensesTransformer = new ExpensesTransformer();
     }
 
-	/**
-	 * Display a listing of the resource.
-	 *
-	 * @return Response
-	 */
-	public function index()
+    /**
+     * Display a listing of the resource.
+     *
+     * @param Request $request
+     * @return Response
+     */
+	public function index(Request $request)
 	{
-		return $this->respond($this->expensesTransformer->currentMonth());
+        $month = $request->input('month', null);
+		return $this->respond($this->expensesTransformer->monthlyExpenses($month));
 	}
 
 	/**

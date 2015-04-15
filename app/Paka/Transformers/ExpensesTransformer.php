@@ -65,13 +65,16 @@ class ExpensesTransformer extends Transformer {
     }
 
     /**
-     * Returns user's expenses from the current month
+     * Returns user's expenses, if $month is null expenses from the current month are returned
      *
+     * @param int $month
      * @return array
      */
-    public function currentMonth()
+    public function monthlyExpenses($month = null)
     {
         $userId = Tokenizer::getUser()->id;
+        $carbon = Carbon::create(null, $month);
+
 
         return $this->transformCollection(
             Tokenizer::getUser()->expenses()->with(
@@ -82,7 +85,10 @@ class ExpensesTransformer extends Transformer {
                         $query->where('user_id', $userId);
                     }
                 ]
-            )->get()->all()
+            )->whereBetween('expenses.created_at', [
+                $carbon->startOfMonth()->toDateString(),
+                $carbon->addMonth()->toDateString()
+            ])->get()->all()
         );
     }
 
