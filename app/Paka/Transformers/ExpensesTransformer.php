@@ -41,6 +41,25 @@ class ExpensesTransformer extends Transformer {
     }
 
     /**
+     * Updates the expense with the given id
+     *
+     * @param $id
+     * @param $data
+     * @return array
+     */
+    public function update($id, $data)
+    {
+        $expense = Expense::find($id);
+
+        $expense->value = $data['value'];
+        $expense->description =  $data['description'];
+
+        $expense->users()->sync($data['relationships'], false);
+
+        return $this->transform($expense);
+    }
+
+    /**
      * Shares the expense with the users
      *
      * @param int $expenseId

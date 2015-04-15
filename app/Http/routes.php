@@ -18,10 +18,10 @@ Route::get('home', 'HomeController@index');
 Route::group(['prefix' => 'api'], function()
 {
 
-	Route::resource('user','API\UserController');
-	Route::resource('categories','API\CategoriesController');
-	Route::resource('expenses','API\ExpensesController');
-	Route::resource('friends','API\FriendsController');
+	Route::resource('user','API\UserController', ['except' =>['create', 'edit', 'destroy']]);
+	Route::resource('categories','API\CategoriesController', ['except' =>['create', 'edit']]);
+	Route::resource('expenses','API\ExpensesController', ['except' =>['create', 'edit']]);
+	Route::resource('friends','API\FriendsController', ['except' =>['create', 'edit']]);
 	
 
 });
