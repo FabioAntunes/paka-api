@@ -60,7 +60,8 @@ class ExpensesController extends ApiController {
 	 */
 	public function destroy($id)
 	{
-		//
+        $response = $this->expensesTransformer->destroy($id);
+        return $response ? $this->respond('Expense deleted successfully'): $this->respondWithError('Cannot delete expense');
 	}
 
 }

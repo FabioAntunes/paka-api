@@ -1,6 +1,7 @@
 <?php namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * App\Category
@@ -17,14 +18,16 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Query\Builder|\App\Category whereDeletedAt($value)
  * @method static \Illuminate\Database\Query\Builder|\App\Category whereCreatedAt($value)
  * @method static \Illuminate\Database\Query\Builder|\App\Category whereUpdatedAt($value)
- * @property-read \App\User $user 
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Expense[] $expenses 
+ * @property-read \App\User $user
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Expense[] $expenses
  */
 class Category extends Model {
 
+    use SoftDeletes;
     protected $fillable = ['name'];
 
-    public function user(){
+    public function user()
+    {
         return $this->belongsTo('App\User');
     }
 

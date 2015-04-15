@@ -1,6 +1,7 @@
 <?php namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * App\Expense
@@ -24,6 +25,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Expense extends Model {
 
+    use SoftDeletes;
     protected $fillable = ['category_id', 'value', 'description'];
 
     public function users()

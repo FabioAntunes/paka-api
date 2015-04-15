@@ -54,6 +54,8 @@ class ExpensesTransformer extends Transformer {
         $expense->value = $data['value'];
         $expense->description =  $data['description'];
 
+        $expense->save();
+
         $expense->users()->sync($data['relationships'], false);
 
         return $this->transform($expense);
@@ -112,6 +114,15 @@ class ExpensesTransformer extends Transformer {
     }
 
     /**
+     * @param $id
+     * @return int
+     */
+    public function destroy($id)
+    {
+        return Expense::destroy($id);
+    }
+
+    /**
      * @param \App\Expense $expense
      * @return array with transformed expense
      */
@@ -127,4 +138,5 @@ class ExpensesTransformer extends Transformer {
             'update_at'   => $expense->updated_at,
         ];
     }
+
 }
