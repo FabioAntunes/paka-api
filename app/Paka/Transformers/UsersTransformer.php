@@ -1,6 +1,6 @@
 <?php namespace App\Paka\Transformers;
 
-class UsersTransformer extends Transformer{
+class UsersTransformer extends Transformer {
 
     /**
      * @param \App\User $user
@@ -9,9 +9,13 @@ class UsersTransformer extends Transformer{
     public function transform($user)
     {
         return [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
+            'id'          => $user->id,
+            'name'        => $user->name,
+            'email'       => $user->email,
+            'permissions' => [
+                'is_owner' => (bool)$user->pivot->is_owner,
+                'permissions' => $user->pivot->permissions,
+            ],
         ];
     }
 }

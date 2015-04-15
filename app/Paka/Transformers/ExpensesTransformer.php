@@ -24,14 +24,18 @@ class ExpensesTransformer extends Transformer {
      */
     public function insert($data)
     {
-        $expense = Expense::create($data);
+        $expense = Expense::create([
+            'value'       => $data['value'],
+            'description' => $data['description'],
+        ]);
 
         $relationAttributes = [
             'is_owner'    => true,
-            'permissions' => 4,
+            'permissions' => 6,
         ];
 
         Tokenizer::getUser()->expenses()->attach($expense->id, $relationAttributes);
+        $expense->categories()->attach($data['category_id']);
 
         return $this->transform($expense);
     }
@@ -67,7 +71,20 @@ class ExpensesTransformer extends Transformer {
      */
     public function currentMonth()
     {
-        return $this->transformCollection(Tokenizer::getUser()->expenses()->where('expenses.created_at', '>=', Carbon::now()->startOfMonth())->get()->all());
+        $userId = Tokenizer::getUser()->id;
+
+//            Tokenizer::getUser()->expenses()->categories()->where('user_id', Tokenizer::getUser()->id)->get()->all());
+        return $this->transformCollection(
+            Expense::with(
+                [
+                    'users',
+                    'categories' => function ($query) use ($userId)
+                    {
+                        $query->where('user_id', $userId);
+                    }
+                ]
+            )->get()->all()
+        );
     }
 
     /**
@@ -80,8 +97,10 @@ class ExpensesTransformer extends Transformer {
             'id'          => $expense->id,
             'value'       => $expense->value,
             'description' => $expense->description,
-            'category'    => $this->categoriesTransformer->transform($expense->category),
+            'category'    => $this->categoriesTransformer->transform($expense->categories->first()),
             'users'       => $this->userTransformer->transformCollection($expense->users->all()),
+            'created_at'  => $expense->created_at,
+            'update_at'   => $expense->updated_at,
         ];
     }
 }

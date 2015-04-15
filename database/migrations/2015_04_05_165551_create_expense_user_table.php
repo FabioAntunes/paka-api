@@ -21,7 +21,6 @@ class CreateExpenseUserTable extends Migration {
 			$table->foreign('user_id')->references('id')->on('users');
 			$table->boolean('is_owner');
 			$table->tinyInteger('permissions');
-			$table->softDeletes();
 			$table->timestamps();
 		});
 	}

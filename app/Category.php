@@ -30,7 +30,7 @@ class Category extends Model {
 
     public function expenses()
     {
-        return $this->hasMany('App\Expense');
+        return $this->belongsToMany('App\Expense');
     }
 
 }

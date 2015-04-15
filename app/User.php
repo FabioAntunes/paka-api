@@ -55,7 +55,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 
 	public function categories()
 	{
-        return $this->hasMany('App\Category')->orWhereNull('categories.user_id');
+        return $this->hasMany('App\Category');
     }
 
     public function friends()
@@ -65,7 +65,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 
     public function expenses()
     {
-        return $this->belongsToMany('App\Expense');
+        return $this->belongsToMany('App\Expense')->withPivot('is_owner', 'permissions');
     }
 
     public function tokens()

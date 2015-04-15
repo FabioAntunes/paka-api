@@ -45,7 +45,7 @@ class ExpensesController extends ApiController {
      */
 	public function store(ExpenseRequest $request)
 	{
-        return $this->respond($this->expensesTransformer->insert($request->all()));
+        return $this->respond($this->expensesTransformer->insert($request->only('value', 'description', 'category_id')));
 	}
 
 	/**

@@ -18,12 +18,18 @@ class ExpensesTableSeeder extends Seeder {
         for ($i = 0; $i < 10; $i ++)
         {
             $expense = Expense::create([
-                'category_id' => rand(1, 7),
                 'value'       => rand(1, 200) / 10,
                 'description' => 'Expense ' . $i,
             ]);
 
-            $expense->users()->attach(1);
+            $expense->users()->attach([
+                1 => [
+                    'is_owner'    => true,
+                    'permissions' => 6
+                ]
+            ]);
+
+            $expense->categories()->attach([1]);
         }
 
     }

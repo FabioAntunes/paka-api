@@ -15,10 +15,8 @@ class CreateExpensesTable extends Migration {
 		Schema::create('expenses', function(Blueprint $table)
 		{
 			$table->increments('id');
-			$table->integer('category_id')->unsigned()->index();
-			$table->foreign('category_id')->references('id')->on('categories');
 			$table->decimal('value', 10, 2);
-			$table->text('description');
+			$table->text('description')->nullable();
 			$table->softDeletes();
 			$table->timestamps();
 		});

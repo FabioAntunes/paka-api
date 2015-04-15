@@ -26,6 +26,7 @@ class ExpenseRequest extends Request {
         return [
             'category_id' => 'required',
             'value'       => 'required|numeric',
+            'description' => 'sometimes|string',
         ];
     }
 

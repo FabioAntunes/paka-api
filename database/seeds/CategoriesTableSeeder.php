@@ -16,39 +16,30 @@ class CategoriesTableSeeder extends Seeder {
         Model::unguard();
 
         Category::create([
-            'name' => 'Health',
-        ]);
-
-        Category::create([
-            'name' => 'Food',
-        ]);
-
-        Category::create([
-            'name' => 'Transportation',
-        ]);
-
-        Category::create([
-            'name' => 'Leisure',
-        ]);
-
-        Category::create([
-            'name' => 'Education',
-        ]);
-
-        Category::create([
-            'name'    => 'User 1 Category',
+            'name'    => 'Health',
             'user_id' => 1,
         ]);
 
         Category::create([
-            'name'    => 'User 1 Category 2',
+            'name'    => 'Food',
             'user_id' => 1,
         ]);
 
         Category::create([
-            'name'    => 'User 2 Category',
-            'user_id' => 2,
+            'name'    => 'Transportation',
+            'user_id' => 1,
         ]);
+
+        Category::create([
+            'name'    => 'Leisure',
+            'user_id' => 1,
+        ]);
+
+        Category::create([
+            'name'    => 'Education',
+            'user_id' => 1,
+        ]);
+
 
     }
 

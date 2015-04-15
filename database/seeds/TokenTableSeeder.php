@@ -18,7 +18,7 @@ class TokenTableSeeder extends Seeder {
 	    Token::create([
 	      'user_id' => 1,
 	      'type_id' => 1,
-	      'key' => bcrypt('paka-api'. 1),
+	      'key' => '$2y$10$VfdM7AOPQgIxX5UIi9/Jb.tYHnqgpGRTaDxy96uxFKM.VybkpWXl2',
             'expires' => date('Y-m-d H:i:s', strtotime("+1 month"))
 	    ]);
 

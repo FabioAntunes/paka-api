@@ -26,14 +26,14 @@ class Expense extends Model {
 
     protected $fillable = ['category_id', 'value', 'description'];
 
-    public function category()
-    {
-        return $this->belongsTo('App\Category');
-    }
-
     public function users()
     {
-        return $this->belongsToMany('App\User');
+        return $this->belongsToMany('App\User')->withPivot('is_owner', 'permissions');
+    }
+
+    public function categories()
+    {
+        return $this->belongsToMany('App\Category');
     }
 
 }
