@@ -60,7 +60,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 
     public function friends()
     {
-        return $this->belongsToMany('App\User', 'user_friend');
+        return $this->belongsToMany('App\User', 'user_friend', 'user_id', 'friend_id');
     }
 
     public function expenses()

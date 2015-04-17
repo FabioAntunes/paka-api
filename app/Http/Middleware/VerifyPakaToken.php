@@ -1,7 +1,8 @@
 <?php namespace App\Http\Middleware;
 
-use Closure;
 use Tokenizer;
+
+use Closure;
 
 class VerifyPakaToken {
 

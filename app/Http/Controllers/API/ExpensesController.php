@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 class ExpensesController extends ApiController {
 
     /**
-     * @var \App\Paka\Transformers\ExpensesTransformer
+     * @var ExpensesTransformer
      */
 	protected $expensesTransformer;
 
@@ -20,8 +20,8 @@ class ExpensesController extends ApiController {
     /**
      * Display a listing of the resource.
      *
-     * @param Request $request
-     * @return Response
+     * @param \Illuminate\Http\Request $request
+     * @return \Response
      */
 	public function index(Request $request)
 	{
@@ -32,8 +32,8 @@ class ExpensesController extends ApiController {
     /**
      * Store a newly created resource in storage.
      *
-     * @param ExpenseRequest|Request $request
-     * @return Response
+     * @param ExpenseRequest $request
+     * @return \Response
      */
 	public function store(ExpenseRequest $request)
 	{
@@ -45,7 +45,7 @@ class ExpensesController extends ApiController {
      *
      * @param  int $id
      * @param ExpenseRequest $request
-     * @return Response
+     * @return \Response
      */
 	public function update($id, ExpenseRequest $request)
 	{
@@ -56,7 +56,7 @@ class ExpensesController extends ApiController {
 	 * Remove the specified resource from storage.
 	 *
 	 * @param  int  $id
-	 * @return Response
+	 * @return \Response
 	 */
 	public function destroy($id)
 	{

@@ -29,6 +29,7 @@ class ApiController extends Controller {
      */
     public function respondWithError($message)
     {
+
         return $this->respond([
             'error' => [
                 'message'     => $message,

@@ -1,5 +1,8 @@
 <?php namespace App\Paka\Transformers;
 
+use App\User;
+use Tokenizer;
+
 class UsersTransformer extends Transformer {
 
     /**
@@ -9,13 +12,63 @@ class UsersTransformer extends Transformer {
     public function transform($user)
     {
         return [
-            'id'          => $user->id,
-            'name'        => $user->name,
-            'email'       => $user->email,
-            'permissions' => [
-                'is_owner' => (bool)$user->pivot->is_owner,
-                'permissions' => $user->pivot->permissions,
-            ],
+            'id'    => $user->id,
+            'name'  => $user->name,
+            'email' => $user->email,
         ];
+    }
+
+    public function transformWithPermissions($user)
+    {
+        return array_add($this->transform($user), 'permissions', [
+            'is_owner'    => (bool) $user->pivot->is_owner,
+            'permissions' => $user->pivot->permissions,
+        ]);
+    }
+
+    /**
+     * Transforms a collection of users, with permissions
+     *
+     * @param array $items
+     * @return array transformed items
+     */
+    public function transformCollectionWithPermissions(array $items)
+    {
+        return array_map([$this, 'transformWithPermissions'], $items);
+    }
+
+    /**
+     * @return array with user's friends
+     */
+    public function friends()
+    {
+        return $this->transformCollection(Tokenizer::getUser()->friends()->get()->all());
+    }
+
+    /**
+     * @param int $userId
+     * @return array|bool
+     */
+    public function attachFriend($userId)
+    {
+        try
+        {
+            Tokenizer::getUser()->friends()->sync([$userId], false);
+
+            return $this->transform(User::find($userId));
+
+        } catch (\Exception $e)
+        {
+            return false;
+        }
+    }
+
+    /**
+     * @param int $userId
+     * @return array|bool
+     */
+    public function detachFriend($userId)
+    {
+        return Tokenizer::getUser()->friends()->detach($userId);
     }
 }

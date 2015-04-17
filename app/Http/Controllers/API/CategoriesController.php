@@ -1,16 +1,15 @@
 <?php namespace App\Http\Controllers\API;
 
 use App\Http\Requests;
-use App\Http\Controllers\Controller;
 use App\Http\Requests\CategoryRequest;
 use App\Paka\Transformers\CategoriesTransformer;
 
-use Illuminate\Http\Request;
+
 
 class CategoriesController extends ApiController {
 
     /**
-     * @var \App\Paka\Transformers\CategoriesTransformer
+     * @var CategoriesTransformer
      */
     protected $categoriesTransformer;
 
@@ -23,7 +22,7 @@ class CategoriesController extends ApiController {
     /**
      * Display a listing of the resource.
      *
-     * @return Response
+     * @return \Response
      */
     public function index()
     {
@@ -33,8 +32,8 @@ class CategoriesController extends ApiController {
     /**
      * Store a newly created resource in storage.
      *
-     * @param Request $request
-     * @return Response
+     * @param CategoryRequest $request
+     * @return \Response
      */
     public function store(CategoryRequest $request)
     {
@@ -46,7 +45,7 @@ class CategoriesController extends ApiController {
      *
      * @param  int $id
      * @param CategoryRequest $request
-     * @return Response
+     * @return \Response
      */
     public function update($id, CategoryRequest $request)
     {
@@ -57,7 +56,7 @@ class CategoriesController extends ApiController {
      * Remove the specified resource from storage.
      *
      * @param  int $id
-     * @return Response
+     * @return \Response
      */
     public function destroy($id)
     {

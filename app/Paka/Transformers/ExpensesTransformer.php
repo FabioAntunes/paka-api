@@ -1,13 +1,20 @@
 <?php namespace App\Paka\Transformers;
 
-use Carbon\Carbon;
 use Tokenizer;
 use App\Expense;
+
+use Carbon\Carbon;
 
 class ExpensesTransformer extends Transformer {
 
 
+    /**
+     * @var CategoriesTransformer
+     */
     protected $categoriesTransformer;
+    /**
+     * @var  UsersTransformer
+     */
     protected $userTransformer;
 
     public function __construct()
@@ -135,7 +142,7 @@ class ExpensesTransformer extends Transformer {
             'value'       => $expense->value,
             'description' => $expense->description,
             'category'    => $this->categoriesTransformer->transform($expense->categories->first()),
-            'users'       => $this->userTransformer->transformCollection($expense->users->all()),
+            'users'       => $this->userTransformer->transformCollectionWithPermissions($expense->users->all()),
             'created_at'  => $expense->created_at,
             'update_at'   => $expense->updated_at,
         ];

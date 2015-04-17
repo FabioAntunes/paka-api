@@ -1,84 +1,53 @@
 <?php namespace App\Http\Controllers\API;
 
-use App\Http\Requests;
-use App\Http\Controllers\Controller;
-
-use Illuminate\Http\Request;
+use App\Http\Requests\FriendRequest;
+use App\Paka\Transformers\UsersTransformer;
 
 class FriendsController extends ApiController {
+
+    /**
+     * @var UsersTransformer
+     */
+    protected $usersTransformer;
+
+    public function __construct(){
+        $this->middleware('auth.token');
+        $this->usersTransformer = new UsersTransformer();
+    }
 
 	/**
 	 * Display a listing of the resource.
 	 *
-	 * @return Response
+	 * @return \Response
 	 */
 	public function index()
 	{
-		//
+        return $this->respond($this->usersTransformer->friends());
 	}
 
-	/**
-	 * Show the form for creating a new resource.
-	 *
-	 * @return Response
-	 */
-	public function create()
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param FriendRequest $request
+     * @return \Response
+     */
+	public function store(FriendRequest $request)
 	{
-		//
-	}
-
-	/**
-	 * Store a newly created resource in storage.
-	 *
-	 * @return Response
-	 */
-	public function store()
-	{
-		//
-	}
-
-	/**
-	 * Display the specified resource.
-	 *
-	 * @param  int  $id
-	 * @return Response
-	 */
-	public function show($id)
-	{
-		//
-	}
-
-	/**
-	 * Show the form for editing the specified resource.
-	 *
-	 * @param  int  $id
-	 * @return Response
-	 */
-	public function edit($id)
-	{
-		//
-	}
-
-	/**
-	 * Update the specified resource in storage.
-	 *
-	 * @param  int  $id
-	 * @return Response
-	 */
-	public function update($id)
-	{
-		//
+        $data = $request->only('user_id');
+        $response = $this->usersTransformer->attachFriend($data['user_id']);
+        return $response ? $this->respond($response) : $this->setStatusCode(500)->respond('Cannot add friend') ;
 	}
 
 	/**
 	 * Remove the specified resource from storage.
 	 *
 	 * @param  int  $id
-	 * @return Response
+	 * @return \Response
 	 */
 	public function destroy($id)
 	{
-		//
+        $response = $this->usersTransformer->detachFriend($id);
+        return $response ? $this->respond('Friend removed') : $this->setStatusCode(500)->respond('Cannot remove friend') ;
 	}
 
 }

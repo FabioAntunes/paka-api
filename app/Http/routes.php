@@ -21,7 +21,7 @@ Route::group(['prefix' => 'api'], function()
 	Route::resource('user','API\UserController', ['except' =>['create', 'edit', 'destroy']]);
 	Route::resource('categories','API\CategoriesController', ['except' =>['create', 'edit']]);
 	Route::resource('expenses','API\ExpensesController', ['except' =>['create', 'edit']]);
-	Route::resource('friends','API\FriendsController', ['except' =>['create', 'edit']]);
+	Route::resource('friends','API\FriendsController', ['except' =>['create', 'update', 'edit']]);
 	
 
 });
