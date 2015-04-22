@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Query\Builder|\App\Expense whereUpdatedAt($value)
  * @property-read \App\Category $category
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\User[] $users
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Category[] $categories 
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Category[] $categories
  */
 class Expense extends Model {
 

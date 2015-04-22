@@ -22,7 +22,9 @@ Route::group(['prefix' => 'api'], function()
 	Route::resource('categories','API\CategoriesController', ['except' =>['create', 'edit']]);
 	Route::resource('expenses','API\ExpensesController', ['except' =>['create', 'edit']]);
 	Route::resource('friends','API\FriendsController', ['except' =>['create', 'update', 'edit']]);
-	
+    Route::post('auth/login', 'API\AuthController@login');
+    Route::post('auth/reset', 'API\AuthController@reset');
+
 
 });
 
