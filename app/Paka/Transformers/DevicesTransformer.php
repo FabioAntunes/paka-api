@@ -1,6 +1,7 @@
 <?php namespace App\Paka\Transformers;
 
 use App\Device;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Tokenizer;
 
 class DevicesTransformer extends Transformer {
@@ -50,5 +51,31 @@ class DevicesTransformer extends Transformer {
     public function transformCollectionWithUsers(array $items)
     {
         return array_map([$this, 'transformWithUser'], $items);
+    }
+
+    /**
+     * Get a device, if doesn't exists creates a new one
+     *
+     * @param $data
+     * @return Device
+     */
+    public function getDevice($data)
+    {
+        try
+        {
+            $device = Tokenizer::getUser()->devices()->where('uuid', $data['uuid'])->firstOrfail();
+        } catch (ModelNotFoundException $e)
+        {
+            $device = new Device([
+                'uuid'     => $data['uuid'],
+                'model'    => $data['model'],
+                'platform' => $data['platform'],
+                'version'  => $data['version'],
+            ]);
+
+            Tokenizer::getUser()->devices()->save($device);
+        }
+
+        return $device;
     }
 }

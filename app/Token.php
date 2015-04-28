@@ -23,8 +23,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Query\Builder|\App\Token whereDeletedAt($value)
  * @method static \Illuminate\Database\Query\Builder|\App\Token whereCreatedAt($value)
  * @method static \Illuminate\Database\Query\Builder|\App\Token whereUpdatedAt($value)
- * @property integer $device_id 
- * @property-read \App\Device $device 
+ * @property integer $device_id
+ * @property-read \App\Device $device
  * @method static \Illuminate\Database\Query\Builder|\App\Token whereDeviceId($value)
  */
 class Token extends Model {
@@ -38,6 +38,13 @@ class Token extends Model {
 
     public function device(){
         return $this->belongsTo('App\Device');
+    }
+
+    public function scopeForDevice($query, $device){
+        return $query->join('devices', function($join) use ($device){
+            $join->on('devices.id', '=', 'tokens.device_id')
+                ->where('devices.uuid', '=', $device['uuid']);
+        });
     }
 
 }

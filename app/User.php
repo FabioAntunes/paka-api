@@ -27,6 +27,7 @@ use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
  * @method static \Illuminate\Database\Query\Builder|\App\User whereRememberToken($value)
  * @method static \Illuminate\Database\Query\Builder|\App\User whereCreatedAt($value)
  * @method static \Illuminate\Database\Query\Builder|\App\User whereUpdatedAt($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Device[] $devices 
  */
 class User extends Model implements AuthenticatableContract, CanResetPasswordContract {
 
@@ -71,6 +72,11 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
     public function tokens()
 	{
         return $this->hasMany('App\Token');
+    }
+
+    public function devices()
+    {
+        return $this->hasMany('App\Device');
     }
 
 }

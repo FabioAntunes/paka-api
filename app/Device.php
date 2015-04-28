@@ -6,17 +6,17 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * App\Device
  *
- * @property integer $id 
- * @property integer $user_id 
- * @property string $model 
- * @property string $platform 
- * @property string $uuid 
- * @property string $version 
- * @property string $deleted_at 
- * @property \Carbon\Carbon $created_at 
- * @property \Carbon\Carbon $updated_at 
- * @property-read \App\User $user 
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Token[] $tokens 
+ * @property integer $id
+ * @property integer $user_id
+ * @property string $model
+ * @property string $platform
+ * @property string $uuid
+ * @property string $version
+ * @property string $deleted_at
+ * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
+ * @property-read \App\User $user
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Token[] $tokens
  * @method static \Illuminate\Database\Query\Builder|\App\Device whereId($value)
  * @method static \Illuminate\Database\Query\Builder|\App\Device whereUserId($value)
  * @method static \Illuminate\Database\Query\Builder|\App\Device whereModel($value)

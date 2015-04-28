@@ -24,24 +24,23 @@ class TokensTransformer extends Transformer {
     /**
      * Creates a new token for the current user
      *
-     * @param $data
-     * @return array
+     * @param array $deviceData
+     * @return \App\Token
      */
-    public function insert($data)
+    public function insert($deviceData)
     {
-        $token = Token::create([
-            'key' => bcrypt('paka-api'. 2),
+        $device = $this->devicesTransformer->getDevice($deviceData);
+        $token = new Token([
+            'key'     => bcrypt('paka-api' . 2),
             'expires' => date('Y-m-d H:i:s', strtotime("+1 month"))
         ]);
 
-        $relationAttributes = [
-            'is_owner'    => true,
-            'permissions' => 6,
-        ];
+        $token->user()->associate(Tokenizer::getUser());
+        $token->device()->associate($device);
 
-        Tokenizer::getUser()->tokens()->save($token);
+        $token->save();
 
-        return $this->transform($expense);
+        return $token;
     }
 
     /**
@@ -51,7 +50,8 @@ class TokensTransformer extends Transformer {
     public function transform($token)
     {
         return [
-            'key'        => $token->id,
+            'id'        => $token->id,
+            'key'        => $token->key,
             'expires'    => $token->expires,
             'created_at' => $token->created_at,
             'updated_at' => $token->updated_at,
@@ -79,5 +79,24 @@ class TokensTransformer extends Transformer {
     public function transformCollectionWithRelationships(array $items)
     {
         return array_map([$this, 'transformWithRelationships'], $items);
+    }
+
+    /**
+     * Get a token for a given device, if it doesn't exists creates a new one
+     *
+     * @param $device
+     * @return array
+     */
+    public function getToken($device)
+    {
+        $token = Tokenizer::getUser()->tokens()->forDevice($device)->get()->first();
+
+        if ($token)
+        {
+            return $this->transform($token);
+        } else
+        {
+            return $this->transform($this->insert($device));
+        }
     }
 }
