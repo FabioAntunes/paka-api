@@ -13,7 +13,7 @@ class ExpensesController extends ApiController {
 	protected $expensesTransformer;
 
     public function __construct(){
-        $this->middleware('auth.token');
+        $this->middleware('jwt.auth');
         $this->expensesTransformer = new ExpensesTransformer();
     }
 

@@ -11,7 +11,7 @@ class FriendsController extends ApiController {
     protected $usersTransformer;
 
     public function __construct(){
-        $this->middleware('auth.token');
+        $this->middleware('jwt.auth');
         $this->usersTransformer = new UsersTransformer();
     }
 

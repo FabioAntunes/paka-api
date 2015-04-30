@@ -14,7 +14,7 @@ class UserController extends Controller {
 
     public function __construct()
     {
-        $this->middleware('auth.token', ['except' => ['index']]);
+        $this->middleware('jwt.auth', ['except' => ['index']]);
         $this->usesTransformers = new UsersTransformer();
     }
 

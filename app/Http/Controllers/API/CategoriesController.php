@@ -15,7 +15,7 @@ class CategoriesController extends ApiController {
 
     public function __construct()
     {
-        $this->middleware('auth.token');
+        $this->middleware('jwt.auth');
         $this->categoriesTransformer = new CategoriesTransformer();
     }
 

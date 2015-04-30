@@ -1,7 +1,7 @@
 <?php namespace App\Paka\Transformers;
 
 use App\User;
-use Tokenizer;
+use JWTAuth;
 
 class UsersTransformer extends Transformer {
 
@@ -42,7 +42,7 @@ class UsersTransformer extends Transformer {
      */
     public function friends()
     {
-        return $this->transformCollection(Tokenizer::getUser()->friends()->get()->all());
+        return $this->transformCollection(JWTAuth::parseToken()->toUser()->friends()->get()->all());
     }
 
     /**
@@ -53,7 +53,7 @@ class UsersTransformer extends Transformer {
     {
         try
         {
-            Tokenizer::getUser()->friends()->sync([$userId], false);
+            JWTAuth::parseToken()->toUser()->friends()->sync([$userId], false);
 
             return $this->transform(User::find($userId));
 
@@ -69,6 +69,6 @@ class UsersTransformer extends Transformer {
      */
     public function detachFriend($userId)
     {
-        return Tokenizer::getUser()->friends()->detach($userId);
+        return JWTAuth::parseToken()->toUser()->friends()->detach($userId);
     }
 }

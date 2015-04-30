@@ -3,6 +3,8 @@
 use Tokenizer;
 use App\Http\Requests\AuthRequest;
 use App\Paka\Transformers\TokensTransformer;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use JWTAuth;
 
 class AuthController extends ApiController {
 
@@ -14,7 +16,7 @@ class AuthController extends ApiController {
 
     public function __construct()
     {
-        $this->middleware('auth.token', ['except' => ['login']]);
+//        $this->middleware('jwt.auth', ['except' => ['login']]);
         $this->tokensTransformer = new TokensTransformer();
 
     }
@@ -28,13 +30,31 @@ class AuthController extends ApiController {
     public function login(AuthRequest $request)
     {
         $credentials = $request->only('email', 'password');
-        $device = $request->only('model', 'platform', 'uuid', 'version');
-        if(Tokenizer::authWithCredentials($credentials))
+
+        try
         {
-            return $this->respond($this->tokensTransformer->getToken($device));
-        }else{
-            $this->setStatusCode(401);
-            return $this->respondWithError('Wrong credentials');
+            if (!$token = JWTAuth::attempt($credentials))
+            {
+
+                return $this->setStatusCode(401)->respondWithError('Invalid credentials');
+            }
+        } catch (JWTException $e)
+        {
+            return $this->setStatusCode(500)->respondWithError('Could not create token');
+        }
+
+        return $this->respond($token);
+    }
+
+    public function refreshToken()
+    {
+        try
+        {
+            JWTAuth::parseToken();
+            return $this->respond(JWTAuth::refresh());
+        } catch (JWTException $e)
+        {
+            return $this->setStatusCode(500)->respondWithError('Could not create token');
         }
 
     }

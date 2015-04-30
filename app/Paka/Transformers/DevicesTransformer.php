@@ -2,7 +2,7 @@
 
 use App\Device;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Tokenizer;
+use JWTAuth;
 
 class DevicesTransformer extends Transformer {
 
@@ -63,7 +63,7 @@ class DevicesTransformer extends Transformer {
     {
         try
         {
-            $device = Tokenizer::getUser()->devices()->where('uuid', $data['uuid'])->firstOrfail();
+            $device = JWTAuth::parseToken()->toUser()->devices()->where('uuid', $data['uuid'])->firstOrfail();
         } catch (ModelNotFoundException $e)
         {
             $device = new Device([
@@ -73,7 +73,7 @@ class DevicesTransformer extends Transformer {
                 'version'  => $data['version'],
             ]);
 
-            Tokenizer::getUser()->devices()->save($device);
+            JWTAuth::parseToken()->toUser()->devices()->save($device);
         }
 
         return $device;

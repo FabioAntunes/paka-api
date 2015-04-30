@@ -2,6 +2,7 @@
 
 use App\Category;
 use Tokenizer;
+use JWTAuth;
 
 class CategoriesTransformer extends Transformer {
 
@@ -15,7 +16,7 @@ class CategoriesTransformer extends Transformer {
     {
         $category = Category::create(['name' => $name]);
 
-        return $this->transform(Tokenizer::getUser()->categories()->save($category));
+        return $this->transform(JWTAuth::parseToken()->toUser()->categories()->save($category));
     }
 
     /**
@@ -25,7 +26,7 @@ class CategoriesTransformer extends Transformer {
      */
     public function all()
     {
-        return $this->transformCollection(Tokenizer::getUser()->categories()->get()->all());
+        return $this->transformCollection(JWTAuth::parseToken()->toUser()->categories()->get()->all());
     }
 
     /**

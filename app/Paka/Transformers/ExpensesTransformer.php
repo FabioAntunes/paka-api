@@ -1,6 +1,6 @@
 <?php namespace App\Paka\Transformers;
 
-use Tokenizer;
+use JWTAuth;
 use App\Expense;
 
 use Carbon\Carbon;
@@ -41,7 +41,7 @@ class ExpensesTransformer extends Transformer {
             'permissions' => 6,
         ];
 
-        Tokenizer::getUser()->expenses()->attach($expense->id, $relationAttributes);
+        JWTAuth::parseToken()->toUser()->expenses()->attach($expense->id, $relationAttributes);
         $expense->categories()->attach($data['category_id']);
 
         return $this->transform($expense);
@@ -100,12 +100,12 @@ class ExpensesTransformer extends Transformer {
      */
     public function monthlyExpenses($month = null)
     {
-        $userId = Tokenizer::getUser()->id;
+        $userId = JWTAuth::parseToken()->toUser()->id;
         $carbon = Carbon::create(null, $month);
 
 
         return $this->transformCollection(
-            Tokenizer::getUser()->expenses()->with(
+            JWTAuth::parseToken()->toUser()->expenses()->with(
                 [
                     'users',
                     'categories' => function ($query) use ($userId)

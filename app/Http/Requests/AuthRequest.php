@@ -24,10 +24,10 @@ class AuthRequest extends Request {
         return [
             'email'     => 'required|max:255',
             'password' => 'required',
-            'model'    => 'required',
-            'platform' => 'required',
-            'uuid'     => 'required',
-            'version'  => 'required',
+//            'model'    => 'required',
+//            'platform' => 'required',
+//            'uuid'     => 'required',
+//            'version'  => 'required',
         ];
     }
 
