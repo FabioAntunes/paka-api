@@ -15,10 +15,7 @@ class CreateInvitesTable extends Migration {
 		Schema::create('invites', function(Blueprint $table)
 		{
 			$table->increments('id');
-		 	$table->integer('expense_id')->unsigned()->index();
-        	$table->foreign('expense_id')->references('id')->on('expenses');
-			$table->boolean('has_accepted');
-			$table->tinyInteger('permissions');
+            $table->string('email')->unique();
 			$table->softDeletes();
 			$table->timestamps();
 		});

@@ -39,7 +39,7 @@ class ExpenseRequest extends Request {
         {
             try
             {
-                $user = \Tokenizer::getUser();
+                $user = \JWTAuth::parseToken()->toUser();
                 Category::where('id', $this->input('category_id'))->where(function ($query) use ($user)
                 {
                     $query->where('user_id', $user->id)->orWhereNull('user_id');

@@ -39,4 +39,8 @@ class Expense extends Model {
         return $this->belongsToMany('App\Category');
     }
 
+    public function invites(){
+        return $this->belongsToMany('App\Invites');
+    }
+
 }
