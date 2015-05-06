@@ -11,11 +11,7 @@
 |
 */
 
-Route::get('/', function(){
-    View::make('index');
-});
-
-Route::get('home', 'HomeController@index');
+//Route::get('home', 'HomeController@index');
 
 Route::group(['prefix' => 'api'], function()
 {
@@ -25,14 +21,14 @@ Route::group(['prefix' => 'api'], function()
 	Route::resource('expenses','API\ExpensesController', ['except' =>['create', 'edit']]);
 	Route::resource('categories.expenses','API\CategoriesExpensesController', ['except' =>['create', 'edit']]);
 	Route::resource('friends','API\FriendsController', ['except' =>['create', 'update', 'edit']]);
-    Route::post('auth/login', 'API\AuthController@login');
-    Route::get('auth/refresh', 'API\AuthController@refreshToken');
-    Route::post('auth/reset', 'API\AuthController@reset');
+    Route::post('auth/login', ['as' => 'api.auth.login', 'uses' => 'API\AuthController@login']);
+    Route::get('auth/refresh', ['as' => 'api.auth.refresh', 'uses' => 'API\AuthController@refreshToken']);
+    Route::post('auth/reset', ['as' => 'api.auth.reset', 'uses' => 'API\AuthController@reset']);
 
 
 });
 
-Route::controllers([
-	'auth' => 'Auth\AuthController',
-	'password' => 'Auth\PasswordController',
-]);
+//Route::controllers([
+//	'auth' => 'Auth\AuthController',
+//	'password' => 'Auth\PasswordController',
+//]);

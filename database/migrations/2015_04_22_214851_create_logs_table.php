@@ -15,8 +15,8 @@ class CreateLogsTable extends Migration {
         Schema::create('logs', function(Blueprint $table)
         {
             $table->increments('id');
-            $table->integer('token_id')->unsigned()->index();
-            $table->foreign('token_id')->references('id')->on('tokens');
+            $table->integer('user_id')->unsigned()->index();
+            $table->foreign('user_id')->references('id')->on('users');
             $table->integer('ip_addres')->unsigned();
             $table->string('request');
             $table->timestamps();
