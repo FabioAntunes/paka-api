@@ -1,7 +1,7 @@
 <?php namespace App\Paka\Transformers;
 
 use App\Category;
-use Tokenizer;
+use App\Paka\Transformers\ExpensesTransformer;
 use JWTAuth;
 
 class CategoriesTransformer extends Transformer {
@@ -57,6 +57,11 @@ class CategoriesTransformer extends Transformer {
         return Category::destroy($id);
     }
 
+    public function allWithExpenses()
+    {
+        return $this->transformColletionWithExpenses(JWTAuth::parseToken()->toUser()->categories()->with('expenses')->get()->all());
+    }
+
     /**
      * @param \App\Category $category
      * @return array with transformed category
@@ -70,4 +75,26 @@ class CategoriesTransformer extends Transformer {
             'update_at'  => $category->updated_at,
         ] : [];
     }
+
+    /**
+     * @param $category
+     * @return array of transformed items
+     */
+    public function transformWithExpenses($category)
+    {
+        $expensesTransformer = new ExpensesTransformer();
+        return array_add($this->transform($category), 'expenses', $expensesTransformer->transformCollection($category->expenses->all()));
+    }
+
+    /**
+     * Transforms a collection of categories, with expenses
+     *
+     * @param array $items
+     * @return array of transformed items
+     */
+    public function transformColletionWithExpenses(array $items)
+    {
+        return array_map([$this, 'transformWithExpenses'], $items);
+    }
+
 }

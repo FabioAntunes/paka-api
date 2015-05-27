@@ -64,4 +64,14 @@ class CategoriesController extends ApiController {
         return $response ? $this->respond('Category deleted successfully'): $this->respondWithError('Cannot delete category');
     }
 
+    /**
+     * Return categories with expenses
+     *
+     * @return \Response
+     */
+    public function expenses()
+    {
+        return $this->respond($this->categoriesTransformer->allWithExpenses());
+    }
+
 }
