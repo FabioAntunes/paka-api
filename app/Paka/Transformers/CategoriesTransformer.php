@@ -71,6 +71,7 @@ class CategoriesTransformer extends Transformer {
         return $category ? [
             'id'         => $category->id,
             'name'       => $category->name,
+            'color'       => $category->color,
             'created_at' => $category->created_at,
             'update_at'  => $category->updated_at,
         ] : [];
