@@ -61,12 +61,12 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 
     public function friends()
     {
-        return $this->belongsToMany('App\User', 'user_friend', 'user_id', 'friend_id');
+        return $this->belongsToMany('App\User', 'user_friend', 'user_id', 'friend_id')->withPivot('name')->withTimestamps();
     }
 
     public function expenses()
     {
-        return $this->belongsToMany('App\Expense')->withPivot('is_owner', 'permissions');
+        return $this->belongsToMany('App\Expense')->withPivot('is_owner', 'permissions')->withTimestamps();
     }
 
     public function tokens()
@@ -80,7 +80,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
     }
 
     public function invites(){
-        return $this->belongsToMany('App\Invites');
+        return $this->belongsToMany('App\Invite')->withPivot('name')->withTimestamps();
     }
 
 }

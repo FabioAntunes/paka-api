@@ -19,6 +19,7 @@ class CreateUserFriendTable extends Migration {
 			$table->foreign('user_id')->references('id')->on('users');
 		 	$table->integer('friend_id')->unsigned()->index();
         	$table->foreign('friend_id')->references('id')->on('users');
+            $table->string('name');
 			$table->timestamps();
 		});
 	}

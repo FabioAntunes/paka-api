@@ -1,6 +1,7 @@
 <?php namespace App\Paka\Transformers;
 
 use App\User;
+use App\Invite;
 use JWTAuth;
 
 class UsersTransformer extends Transformer {
@@ -13,7 +14,7 @@ class UsersTransformer extends Transformer {
     {
         return [
             'id'    => $user->id,
-            'name'  => $user->name,
+            'name'  => $user->pivot->name,
             'email' => $user->email,
         ];
     }
@@ -46,20 +47,34 @@ class UsersTransformer extends Transformer {
     }
 
     /**
-     * @param int $userId
+     * @param array $friendData
      * @return array|bool
      */
-    public function attachFriend($userId)
+    public function attachFriend($friendData)
     {
-        try
-        {
-            JWTAuth::parseToken()->toUser()->friends()->sync([$userId], false);
+        try{
+            $user = User::whereEmail($friendData['email'])->firstOrFail();
+            JWTAuth::parseToken()->toUser()->friends()->sync([$user->id =>['name' => $friendData['name']]], false);
 
-            return $this->transform(User::find($userId));
+            return [
+                'id'    => $user->id,
+                'name'  => $friendData['name'],
+                'email' => $friendData['email'],
+            ];
 
-        } catch (\Exception $e)
-        {
-            return false;
+        }catch(\Exception $e){
+            try{
+                $invite = Invite::firstOrCreate(array('email' => $friendData['email']));;
+                JWTAuth::parseToken()->toUser()->invites()->sync([$invite->id => ['name' => $friendData['name']]], false);
+
+                return [
+                    'name'  => $friendData['name'],
+                    'email' => $friendData['email'],
+                ];
+
+            }catch(\Exception $e){
+                return false;
+            }
         }
     }
 

@@ -19,6 +19,7 @@ class CreateInviteUserTable extends Migration {
             $table->foreign('invite_id')->references('id')->on('invites');
             $table->integer('user_id')->unsigned()->index();
             $table->foreign('user_id')->references('id')->on('users');
+            $table->string('name');
 			$table->timestamps();
 		});
 	}

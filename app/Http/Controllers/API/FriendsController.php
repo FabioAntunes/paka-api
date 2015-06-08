@@ -33,7 +33,7 @@ class FriendsController extends ApiController {
      */
 	public function store(FriendRequest $request)
 	{
-        $response = $this->usersTransformer->attachFriend($request->only('email'));
+        $response = $this->usersTransformer->attachFriend($request->only('email', 'name'));
         return $response ? $this->respond($response) : $this->setStatusCode(500)->respond('Cannot add friend') ;
 	}
 
