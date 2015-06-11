@@ -43,7 +43,9 @@ class UsersTransformer extends Transformer {
      */
     public function friends()
     {
-        return $this->transformCollection(JWTAuth::parseToken()->toUser()->friends()->get()->all());
+        $friends = $this->transformCollection(JWTAuth::parseToken()->toUser()->friends()->get()->all());
+        $invites = $this->transformCollection(JWTAuth::parseToken()->toUser()->invites()->get()->all());
+        return array_merge($friends, $invites);
     }
 
     /**
