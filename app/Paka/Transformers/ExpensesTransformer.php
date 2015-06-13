@@ -1,6 +1,5 @@
 <?php namespace App\Paka\Transformers;
 
-use JWTAuth;
 use App\Expense;
 
 use Carbon\Carbon;
@@ -21,6 +20,23 @@ class ExpensesTransformer extends Transformer {
     {
         $this->categoriesTransformer = new CategoriesTransformer();
         $this->userTransformer = new UsersTransformer();
+    }
+
+    /**
+     * @param \App\Expense $expense
+     * @return array with transformed expense
+     */
+    public function transform($expense)
+    {
+        return [
+            'id'          => $expense->id,
+            'value'       => $expense->value,
+            'description' => $expense->description,
+            'category'    => $this->categoriesTransformer->transform($expense->categories->first()),
+            'friends'     => $this->userTransformer->transformFriendCollection($expense->friends->all()),
+            'created_at'  => $expense->created_at,
+            'update_at'   => $expense->updated_at,
+        ];
     }
 
     /**
@@ -59,7 +75,7 @@ class ExpensesTransformer extends Transformer {
         $expense = Expense::find($id);
 
         $expense->value = $data['value'];
-        $expense->description =  $data['description'];
+        $expense->description = $data['description'];
 
         $expense->save();
 
@@ -100,17 +116,17 @@ class ExpensesTransformer extends Transformer {
      */
     public function monthlyExpenses($month = null)
     {
-        $userId = JWTAuth::parseToken()->toUser()->id;
+        $user = JWTAuth::parseToken()->toUser();
         $carbon = Carbon::create(null, $month);
 
 
         return $this->transformCollection(
-            JWTAuth::parseToken()->toUser()->expenses()->with(
+            $user->expenses()->with(
                 [
-                    'users',
-                    'categories' => function ($query) use ($userId)
+                    'friends.friendables',
+                    'categories' => function ($query) use ($user)
                     {
-                        $query->where('user_id', $userId);
+                        $query->where('user_id', $user->id);
                     }
                 ]
             )->whereBetween('expenses.created_at', [
@@ -129,23 +145,6 @@ class ExpensesTransformer extends Transformer {
     public function destroy($id)
     {
         return Expense::destroy($id);
-    }
-
-    /**
-     * @param \App\Expense $expense
-     * @return array with transformed expense
-     */
-    public function transform($expense)
-    {
-        return [
-            'id'          => $expense->id,
-            'value'       => $expense->value,
-            'description' => $expense->description,
-            'category'    => $this->categoriesTransformer->transform($expense->categories->first()),
-            'users'       => $this->userTransformer->transformCollectionWithPermissions($expense->users->all()),
-            'created_at'  => $expense->created_at,
-            'update_at'   => $expense->updated_at,
-        ];
     }
 
 }

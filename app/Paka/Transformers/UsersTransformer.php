@@ -1,5 +1,6 @@
 <?php namespace App\Paka\Transformers;
 
+use App\Friend;
 use App\User;
 use App\Invite;
 use JWTAuth;
@@ -14,28 +15,33 @@ class UsersTransformer extends Transformer {
     {
         return [
             'id'    => $user->id,
-            'name'  => $user->pivot->name,
+            'name'  => $user->name,
             'email' => $user->email,
         ];
     }
 
-    public function transformWithPermissions($user)
+    /**
+     * @param \App\Friend $friend
+     * @return array with transformed friend
+     */
+    public function transformFriend($friend)
     {
-        return array_add($this->transform($user), 'permissions', [
-            'is_owner'    => (bool) $user->pivot->is_owner,
-            'permissions' => $user->pivot->permissions,
-        ]);
+        return [
+            'id'    => $friend->id,
+            'name'  => $friend->name,
+            'email' => $friend->friendable->email,
+        ];
     }
 
     /**
-     * Transforms a collection of users, with permissions
+     * Transforms a collection of friends
      *
-     * @param array $items
+     * @param array $items of friends
      * @return array transformed items
      */
-    public function transformCollectionWithPermissions(array $items)
+    public function transformFriendCollection(array $items)
     {
-        return array_map([$this, 'transformWithPermissions'], $items);
+        return array_map([$this, 'transformFriend'], $items);
     }
 
     /**
@@ -43,9 +49,7 @@ class UsersTransformer extends Transformer {
      */
     public function friends()
     {
-        $friends = $this->transformCollection(JWTAuth::parseToken()->toUser()->friends()->get()->all());
-        $invites = $this->transformCollection(JWTAuth::parseToken()->toUser()->invites()->get()->all());
-        return array_merge($friends, $invites);
+        return $this->transformFriendCollection(JWTAuth::parseToken()->toUser()->friends()->with('friendable')->get()->all());
     }
 
     /**
@@ -54,38 +58,33 @@ class UsersTransformer extends Transformer {
      */
     public function attachFriend($friendData)
     {
+        $friend = new Friend;
+        $friend->name = $friendData['name'];
         try{
             $user = User::whereEmail($friendData['email'])->firstOrFail();
-            JWTAuth::parseToken()->toUser()->friends()->sync([$user->id =>['name' => $friendData['name']]], false);
-
-            return [
-                'id'    => $user->id,
-                'name'  => $friendData['name'],
-                'email' => $friendData['email'],
-            ];
+            $friend->friendable()->associate($user);
 
         }catch(\Exception $e){
             try{
-                $invite = Invite::firstOrCreate(array('email' => $friendData['email']));;
-                JWTAuth::parseToken()->toUser()->invites()->sync([$invite->id => ['name' => $friendData['name']]], false);
-
-                return [
-                    'name'  => $friendData['name'],
-                    'email' => $friendData['email'],
-                ];
+                $invite = Invite::firstOrCreate(['email' => $friendData['email']]);
+                $friend->friendable()->associate($invite);
 
             }catch(\Exception $e){
+                $friend->delete();
                 return false;
             }
         }
+
+        JWTAuth::parseToken()->toUser()->friends()->save($friend);
+        return $this->transformFriend($friend);
     }
 
     /**
-     * @param int $userId
+     * @param int $friendId
      * @return array|bool
      */
-    public function detachFriend($userId)
+    public function detachFriend($friendId)
     {
-        return JWTAuth::parseToken()->toUser()->friends()->detach($userId);
+        return JWTAuth::parseToken()->toUser()->friends()->where('id', $friendId)->delete();
     }
 }

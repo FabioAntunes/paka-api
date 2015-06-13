@@ -1,5 +1,6 @@
 <?php
 use App\Expense;
+use App\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -17,19 +18,29 @@ class ExpensesTableSeeder extends Seeder {
 
         for ($i = 0; $i < 10; $i ++)
         {
+            $rand = rand(1, 200) / 10;
             $expense = Expense::create([
-                'value'       => rand(1, 200) / 10,
+                'user_id'     => 1,
+                'value'       => $rand,
                 'description' => 'Expense ' . $i,
             ]);
 
-            $expense->users()->attach([
+            $expense->friends()->attach([
                 1 => [
-                    'is_owner'    => true,
-                    'permissions' => 6
+                    'value'   => $rand / 2,
+                    'is_paid' => true,
+                    'version' => 1
+                ],
+                2 => [
+                    'value'   => $rand / 2,
+                    'is_paid' => false,
+                    'version' => 1
                 ]
             ]);
 
             $expense->categories()->attach([1]);
+
+            User::find(1)->expenses()->save($expense);
         }
 
     }

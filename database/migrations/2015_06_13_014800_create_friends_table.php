@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateInviteUserTable extends Migration {
+class CreateFriendsTable extends Migration {
 
 	/**
 	 * Run the migrations.
@@ -12,15 +12,16 @@ class CreateInviteUserTable extends Migration {
 	 */
 	public function up()
 	{
-		Schema::create('invite_user', function(Blueprint $table)
+		Schema::create('friends', function(Blueprint $table)
 		{
 			$table->increments('id');
-            $table->integer('invite_id')->unsigned()->index();
-            $table->foreign('invite_id')->references('id')->on('invites');
-            $table->integer('user_id')->unsigned()->index();
-            $table->foreign('user_id')->references('id')->on('users');
-            $table->string('name');
 			$table->timestamps();
+            $table->foreign('user_id')->references('id')->on('users');
+            $table->integer('user_id')->unsigned()->index();
+            $table->integer('friendable_id')->unsigned()->index();
+            $table->string('friendable_type');
+            $table->string('name');
+            $table->integer('version')->unsigned()->default(1);
 		});
 	}
 
@@ -31,7 +32,7 @@ class CreateInviteUserTable extends Migration {
 	 */
 	public function down()
 	{
-        Schema::drop('invite_user');
+		Schema::drop('friends');
 	}
 
 }

@@ -29,18 +29,18 @@ class Expense extends Model {
     use SoftDeletes;
     protected $fillable = ['category_id', 'value', 'description'];
 
-    public function users()
+    public function friends()
     {
-        return $this->belongsToMany('App\User')->withPivot('is_owner', 'permissions');
+        return $this->belongsToMany('App\Friend')->withPivot('value', 'is_paid', 'version')->withTimestamps();
+    }
+
+    public function user()
+    {
+        return $this->belongsTo('App\User');
     }
 
     public function categories()
     {
         return $this->belongsToMany('App\Category');
     }
-
-    public function invites(){
-        return $this->belongsToMany('App\Invites');
-    }
-
 }

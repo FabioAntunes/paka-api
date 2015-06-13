@@ -15,10 +15,11 @@ class CreateCategoriesTable extends Migration {
 		Schema::create('categories', function(Blueprint $table)
 		{
 			$table->increments('id');
-			$table->string('name');
-			$table->string('color');
 			$table->integer('user_id')->unsigned()->index();
 			$table->foreign('user_id')->references('id')->on('users');
+			$table->string('name');
+			$table->string('color');
+			$table->integer('version')->unsigned()->default(1);
 			$table->softDeletes();
 			$table->timestamps();
 		});

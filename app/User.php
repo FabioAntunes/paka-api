@@ -61,26 +61,16 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 
     public function friends()
     {
-        return $this->belongsToMany('App\User', 'user_friend', 'user_id', 'friend_id')->withPivot('name')->withTimestamps();
+        return $this->hasMany('App\Friend');
     }
 
     public function expenses()
     {
-        return $this->belongsToMany('App\Expense')->withPivot('is_owner', 'permissions')->withTimestamps();
-    }
-
-    public function tokens()
-	{
-        return $this->hasMany('App\Token');
+        return $this->hasMany('App\Expense');
     }
 
     public function devices()
     {
         return $this->hasMany('App\Device');
     }
-
-    public function invites(){
-        return $this->belongsToMany('App\Invite')->withPivot('name')->withTimestamps();
-    }
-
 }

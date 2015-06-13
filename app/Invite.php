@@ -27,6 +27,17 @@ class Invite extends Model {
      *
      * @var array
      */
-    protected $fillable = ['name', 'email'];
+    protected $fillable = ['email'];
+
+
+    public function expenses()
+    {
+        return $this->morphToMany('App\Expense', 'expensable')->withPivot('value', 'is_paid', 'is_owner', 'version')->withTimestamps();
+    }
+
+    public function friends()
+    {
+        return $this->morphMany('App\Friend', 'friendable');
+    }
 
 }
