@@ -34,6 +34,19 @@ class UsersTransformer extends Transformer {
     }
 
     /**
+     * @param \App\Friend $friend
+     * @return array with transformed friend
+     */
+    public function transformFriendWithExpense($friend)
+    {
+        return array_merge($this->transformFriend($friend), [
+            'value'   => $friend->pivot->value,
+            'isPaid'  => (bool) $friend->pivot->is_paid,
+            'version' => $friend->pivot->version,
+        ]);
+    }
+
+    /**
      * Transforms a collection of friends
      *
      * @param array $items of friends
@@ -45,11 +58,22 @@ class UsersTransformer extends Transformer {
     }
 
     /**
+     * Transforms a collection of friends with expenses
+     *
+     * @param array $items of friends
+     * @return array transformed items
+     */
+    public function transformFriendWithExpenseCollection(array $items)
+    {
+        return array_map([$this, 'transformFriendWithExpense'], $items);
+    }
+
+    /**
      * @return array with user's friends
      */
     public function friends()
     {
-        return $this->transformFriendCollection(JWTAuth::parseToken()->toUser()->friends()->with('friendable')->get()->all());
+        return $this->transformFriendCollection(JWTAuth::parseToken()->toUser()->friends()->with('friendable')->where('friendable_id', '!=', 'user_id')->where('friendable_type', '!=', 'App\User')->get()->all());
     }
 
     /**
@@ -60,22 +84,28 @@ class UsersTransformer extends Transformer {
     {
         $friend = new Friend;
         $friend->name = $friendData['name'];
-        try{
+        try
+        {
             $user = User::whereEmail($friendData['email'])->firstOrFail();
             $friend->friendable()->associate($user);
 
-        }catch(\Exception $e){
-            try{
+        } catch (\Exception $e)
+        {
+            try
+            {
                 $invite = Invite::firstOrCreate(['email' => $friendData['email']]);
                 $friend->friendable()->associate($invite);
 
-            }catch(\Exception $e){
+            } catch (\Exception $e)
+            {
                 $friend->delete();
+
                 return false;
             }
         }
 
         JWTAuth::parseToken()->toUser()->friends()->save($friend);
+
         return $this->transformFriend($friend);
     }
 

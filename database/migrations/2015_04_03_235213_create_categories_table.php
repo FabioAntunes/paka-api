@@ -20,6 +20,7 @@ class CreateCategoriesTable extends Migration {
 			$table->string('name');
 			$table->string('color');
 			$table->integer('version')->unsigned()->default(1);
+			$table->decimal('total', 10, 2)->default(0);
 			$table->softDeletes();
 			$table->timestamps();
 		});

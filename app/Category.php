@@ -25,6 +25,10 @@ class Category extends Model {
 
     use SoftDeletes;
     protected $fillable = ['name'];
+    protected $casts = [
+        'total'   => 'float',
+        'version' => 'integer',
+    ];
 
     public function user()
     {
@@ -33,7 +37,7 @@ class Category extends Model {
 
     public function expenses()
     {
-        return $this->belongsToMany('App\Expense');
+        return $this->hasMany('App\Expense');
     }
 
 }

@@ -28,6 +28,12 @@ class Expense extends Model {
 
     use SoftDeletes;
     protected $fillable = ['category_id', 'value', 'description'];
+    protected $casts = [
+        'total'   => 'float',
+        'version' => 'integer',
+        'value' => 'float',
+        'shared' => 'boolean',
+    ];
 
     public function friends()
     {
@@ -39,8 +45,8 @@ class Expense extends Model {
         return $this->belongsTo('App\User');
     }
 
-    public function categories()
+    public function category()
     {
-        return $this->belongsToMany('App\Category');
+        return $this->belongsTo('App\Category');
     }
 }

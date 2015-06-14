@@ -23,6 +23,7 @@ class ExpensesTableSeeder extends Seeder {
                 'user_id'     => 1,
                 'value'       => $rand,
                 'description' => 'Expense ' . $i,
+                'category_id' => rand(1, 5)
             ]);
 
             $expense->friends()->attach([
@@ -37,8 +38,6 @@ class ExpensesTableSeeder extends Seeder {
                     'version' => 1
                 ]
             ]);
-
-            $expense->categories()->attach([1]);
 
             User::find(1)->expenses()->save($expense);
         }

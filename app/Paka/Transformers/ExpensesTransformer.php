@@ -1,5 +1,6 @@
 <?php namespace App\Paka\Transformers;
 
+use JWTAuth;
 use App\Expense;
 
 use Carbon\Carbon;
@@ -32,8 +33,8 @@ class ExpensesTransformer extends Transformer {
             'id'          => $expense->id,
             'value'       => $expense->value,
             'description' => $expense->description,
-            'category'    => $this->categoriesTransformer->transform($expense->categories->first()),
-            'friends'     => $this->userTransformer->transformFriendCollection($expense->friends->all()),
+            'category'    => $this->categoriesTransformer->transform($expense->category),
+            'friends'     => $this->userTransformer->transformFriendWithExpenseCollection($expense->friends->all()),
             'created_at'  => $expense->created_at,
             'update_at'   => $expense->updated_at,
         ];
@@ -47,18 +48,22 @@ class ExpensesTransformer extends Transformer {
      */
     public function insert($data)
     {
-        $expense = Expense::create([
-            'value'       => $data['value'],
-            'description' => $data['description'],
+        $user = JWTAuth::parseToken()->toUser();
+        $expense = new Expense;
+        $expense->value = $data['value'];
+        $expense->description = $data['description'];
+        $expense->category_id = $data['category_id'];
+        $self = $user->friends()->where('friendable_type', 'App\User')->where('friendable_id', $user->id)->first();
+
+        $user->expenses()->save($expense);
+
+        $expense->friends()->attach([
+            $self->id => [
+                'value'   => $data['value'],
+                'is_paid' => true,
+                'version' => 1
+            ]
         ]);
-
-        $relationAttributes = [
-            'is_owner'    => true,
-            'permissions' => 6,
-        ];
-
-        JWTAuth::parseToken()->toUser()->expenses()->attach($expense->id, $relationAttributes);
-        $expense->categories()->attach($data['category_id']);
 
         return $this->transform($expense);
     }
@@ -66,20 +71,17 @@ class ExpensesTransformer extends Transformer {
     /**
      * Updates the expense with the given id
      *
-     * @param $id
+     * @param \App\Expense
      * @param $data
      * @return array
      */
-    public function update($id, $data)
+    public function update(Expense $expense, $data)
     {
-        $expense = Expense::find($id);
-
         $expense->value = $data['value'];
         $expense->description = $data['description'];
+        $expense->category_id = $data['category_id'];
 
         $expense->save();
-
-        $expense->users()->sync($data['relationships'], false);
 
         return $this->transform($expense);
     }
@@ -121,14 +123,9 @@ class ExpensesTransformer extends Transformer {
 
 
         return $this->transformCollection(
-            $user->expenses()->with(
-                [
-                    'friends.friendables',
-                    'categories' => function ($query) use ($user)
-                    {
-                        $query->where('user_id', $user->id);
-                    }
-                ]
+            $user->expenses()->with('friends.friendable',
+                'category'
+
             )->whereBetween('expenses.created_at', [
                 $carbon->startOfMonth()->toDateString(),
                 $carbon->addMonth()->toDateString()

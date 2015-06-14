@@ -1,5 +1,6 @@
 <?php namespace App\Http\Controllers\API;
 
+use App\Category;
 use App\Http\Requests;
 use App\Http\Requests\CategoryRequest;
 use App\Paka\Transformers\CategoriesTransformer;
@@ -37,41 +38,51 @@ class CategoriesController extends ApiController {
      */
     public function store(CategoryRequest $request)
     {
-        return $this->respond($this->categoriesTransformer->insert($request->input('name')));
+        return $this->respond($this->categoriesTransformer->insert($request->only('name', 'color')));
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param \App\Category $category
+     * @return Response
+     */
+    public function show(Category $category)
+    {
+        return $this->respond($this->categoriesTransformer->transform($category));
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  int $id
+     * @param \App\Category $category
      * @param CategoryRequest $request
      * @return \Response
      */
-    public function update($id, CategoryRequest $request)
+    public function update(Category $category, CategoryRequest $request)
     {
-        return $this->respond($this->categoriesTransformer->update($id, $request->input('name')));
+        return $this->respond($this->categoriesTransformer->update($category, $request->only('name', 'color')));
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int $id
+     * @param \App\Category $category
      * @return \Response
      */
-    public function destroy($id)
+    public function destroy(Category $category)
     {
-        $response = $this->categoriesTransformer->destroy($id);
-        return $response ? $this->respond('Category deleted successfully'): $this->respondWithError('Cannot delete category');
+        return  $category->delete() ? $this->respond('Category deleted successfully'): $this->respondWithError('Cannot delete category');
     }
 
-    /**
-     * Return categories with expenses
-     *
-     * @return \Response
-     */
-    public function expenses()
-    {
-        return $this->respond($this->categoriesTransformer->allWithExpenses());
-    }
+//    /**
+//     * Return categories with expenses
+//     *
+//     * @return \Response
+//     */
+//    public function expenses()
+//    {
+//        return $this->respond($this->categoriesTransformer->allWithExpenses());
+//    }
 
 }

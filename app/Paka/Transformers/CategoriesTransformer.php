@@ -9,12 +9,14 @@ class CategoriesTransformer extends Transformer {
     /**
      * Creates a new category for the current user
      *
-     * @param $name
+     * @param array $categoryData
      * @return array
      */
-    public function insert($name)
+    public function insert($categoryData)
     {
-        $category = Category::create(['name' => $name]);
+        $category = new Category;
+        $category->name = $categoryData['name'];
+        $category->color = $categoryData['color'];
 
         return $this->transform(JWTAuth::parseToken()->toUser()->categories()->save($category));
     }
@@ -32,29 +34,34 @@ class CategoriesTransformer extends Transformer {
     /**
      * Updates the category with the given id
      *
-     * @param $id
-     * @param $name
+     * @param \App\Category $category
+     * @param array $categoryData with updated data
      * @return array
      */
-    public function update($id, $name)
+    public function update(Category $category, $categoryData)
     {
-        $category = Category::find($id);
+        if($category->name != $categoryData['name'] || $category->color != $categoryData['color']){
+            $category->name = $categoryData['name'];
+            $category->color = $categoryData['color'];
+            $category->version = $category->version+1;
 
-        $category->name = $name;
-        $category->save();
+            $category->save();
+
+        }
+
 
         return $this->transform($category);
     }
 
     /**
-     * Destroys the category with the given id
+     * Find the category with the given id
      *
      * @param $id
-     * @return int
+     * @return array
      */
-    public function destroy($id)
+    public function find($id)
     {
-        return Category::destroy($id);
+        return $this->transform(Category::find($id));
     }
 
     public function allWithExpenses()
@@ -72,6 +79,7 @@ class CategoriesTransformer extends Transformer {
             'id'         => $category->id,
             'name'       => $category->name,
             'color'       => $category->color,
+            'total'       => $category->total,
             'created_at' => $category->created_at,
             'update_at'  => $category->updated_at,
         ] : [];

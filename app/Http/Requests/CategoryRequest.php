@@ -23,6 +23,7 @@ class CategoryRequest extends Request {
     {
         return [
             'name' => 'required|max:255',
+            'color' => 'required|max:7',
         ];
     }
 

@@ -1,5 +1,6 @@
 <?php namespace App\Http\Controllers\API;
 
+use App\Expense;
 use App\Http\Requests\ExpenseRequest;
 use App\Paka\Transformers\ExpensesTransformer;
 
@@ -41,27 +42,37 @@ class ExpensesController extends ApiController {
 	}
 
     /**
+     * Display the specified resource.
+     *
+     * @param \App\Expense $expense
+     * @return Response
+     */
+    public function show(Expense $expense)
+    {
+        return $this->respond($this->expensesTransformer->transform($expense));
+    }
+
+    /**
      * Update the specified resource in storage.
      *
-     * @param  int $id
+     * @param  \App\Expense
      * @param ExpenseRequest $request
      * @return \Response
      */
-	public function update($id, ExpenseRequest $request)
+	public function update(Expense $expense, ExpenseRequest $request)
 	{
-        return $this->respond($this->expensesTransformer->update($id, $request->only('value', 'description', 'category_id', 'relationships')));
+        return $this->respond($this->expensesTransformer->update($expense, $request->only('value', 'description', 'category_id')));
 	}
 
 	/**
 	 * Remove the specified resource from storage.
 	 *
-	 * @param  int  $id
+     * @param  \App\Expense
 	 * @return \Response
 	 */
-	public function destroy($id)
+	public function destroy(Expense $expense)
 	{
-        $response = $this->expensesTransformer->destroy($id);
-        return $response ? $this->respond('Expense deleted successfully'): $this->respondWithError('Cannot delete expense');
+        return $expense->delete() ? $this->respond('Expense deleted successfully'): $this->respondWithError('Cannot delete expense');
 	}
 
 }
