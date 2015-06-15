@@ -73,7 +73,10 @@ class UsersTransformer extends Transformer {
      */
     public function friends()
     {
-        return $this->transformFriendCollection(JWTAuth::parseToken()->toUser()->friends()->with('friendable')->where('friendable_id', '!=', 'user_id')->where('friendable_type', '!=', 'App\User')->get()->all());
+        return $this->transformFriendCollection(
+            JWTAuth::parseToken()->toUser()->friends()
+                ->with('friendable')->userFriends()->get()->all()
+        );
     }
 
     /**
@@ -116,5 +119,21 @@ class UsersTransformer extends Transformer {
     public function detachFriend($friendId)
     {
         return JWTAuth::parseToken()->toUser()->friends()->where('id', $friendId)->delete();
+    }
+
+    /**
+     * Get User info
+     * @return array|bool
+     */
+    public function userInfo($token = false)
+    {
+        if($token){
+            $user =  JWTAuth::authenticate($token);
+        }else{
+            $user = JWTAuth::parseToken()->toUser();
+        }
+
+        $user['self']=  $this->transformFriend($user->friends()->with('friendable')->self()->first());
+        return $user;
     }
 }

@@ -1,5 +1,6 @@
 <?php namespace App\Http\Controllers\API;
 
+use App\Paka\Transformers\UsersTransformer;
 use Tokenizer;
 use App\Http\Requests\AuthRequest;
 use App\Paka\Transformers\TokensTransformer;
@@ -12,12 +13,13 @@ class AuthController extends ApiController {
      * @var TokensTransformer
      */
     protected $tokensTransformer;
+    protected $usesTransformers;
 
 
     public function __construct()
     {
-//        $this->middleware('jwt.auth', ['except' => ['login']]);
         $this->tokensTransformer = new TokensTransformer();
+        $this->usesTransformers = new UsersTransformer();
 
     }
 
@@ -43,7 +45,9 @@ class AuthController extends ApiController {
             return $this->setStatusCode(500)->respondWithError('Could not create token');
         }
 
-        return $this->respond($token);
+        $user = $this->usesTransformers->userInfo($token);
+        $user['token'] = $token;
+        return $this->respond($user);
     }
 
     public function refreshToken()
@@ -51,7 +55,10 @@ class AuthController extends ApiController {
         try
         {
             JWTAuth::parseToken();
-            return $this->respond(JWTAuth::refresh());
+            $token = JWTAuth::refresh();
+            $user = $this->usesTransformers->userInfo($token);
+            $user['token'] = $token;
+            return $this->respond($user);
         } catch (JWTException $e)
         {
             return $this->setStatusCode(500)->respondWithError('Could not create token');

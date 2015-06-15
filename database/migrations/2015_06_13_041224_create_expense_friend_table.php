@@ -20,8 +20,7 @@ class CreateExpenseFriendTable extends Migration {
             $table->foreign('friend_id')->references('id')->on('friends');
             $table->integer('friend_id')->unsigned()->index();
             $table->decimal('value', 10, 2);
-            $table->boolean('is_paid');
-            $table->integer('version')->unsigned()->default(1);
+            $table->boolean('is_paid')->default(true);
             $table->timestamps();
         });
     }

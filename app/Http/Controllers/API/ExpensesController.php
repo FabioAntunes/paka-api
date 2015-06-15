@@ -38,7 +38,7 @@ class ExpensesController extends ApiController {
      */
 	public function store(ExpenseRequest $request)
 	{
-        return $this->respond($this->expensesTransformer->insert($request->only('value', 'description', 'category_id')));
+        return $this->respond($this->expensesTransformer->insert($request->only('value', 'description', 'category', 'friends')));
 	}
 
     /**
@@ -61,7 +61,8 @@ class ExpensesController extends ApiController {
      */
 	public function update(Expense $expense, ExpenseRequest $request)
 	{
-        return $this->respond($this->expensesTransformer->update($expense, $request->only('value', 'description', 'category_id')));
+//        $this->setStatusCode(400);
+        return $this->respond($this->expensesTransformer->update($expense, $request->only('value', 'description', 'category', 'friends')));
 	}
 
 	/**

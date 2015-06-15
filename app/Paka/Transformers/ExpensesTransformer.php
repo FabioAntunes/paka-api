@@ -48,22 +48,30 @@ class ExpensesTransformer extends Transformer {
      */
     public function insert($data)
     {
-        $user = JWTAuth::parseToken()->toUser();
         $expense = new Expense;
         $expense->value = $data['value'];
         $expense->description = $data['description'];
-        $expense->category_id = $data['category_id'];
-        $self = $user->friends()->where('friendable_type', 'App\User')->where('friendable_id', $user->id)->first();
+        $expense->category_id = $data['category']['id'];
 
-        $user->expenses()->save($expense);
+        JWTAuth::parseToken()->toUser()->expenses()->save($expense);
+//        $self = $user->friends()->where('friendable_type', 'App\User')->where('friendable_id', $user->id)->first();
 
-        $expense->friends()->attach([
-            $self->id => [
-                'value'   => $data['value'],
-                'is_paid' => true,
-                'version' => 1
-            ]
-        ]);
+
+//        $expense->friends()->attach([
+//            $self->id => [
+//                'value'   => $data['value'],
+//                'is_paid' => true,
+//                'version' => 1
+//            ]
+//        ]);
+        $syncFriends = [];
+        foreach ($data['friends'] as $friend)
+        {
+            $syncFriends[$friend['id']] = [
+                'value' => $friend['value']
+            ];
+        }
+        $expense->friends()->sync($syncFriends);
 
         return $this->transform($expense);
     }
@@ -79,9 +87,18 @@ class ExpensesTransformer extends Transformer {
     {
         $expense->value = $data['value'];
         $expense->description = $data['description'];
-        $expense->category_id = $data['category_id'];
+        $expense->category_id = $data['category']['id'];
 
         $expense->save();
+
+        $syncFriends = [];
+        foreach ($data['friends'] as $friend)
+        {
+            $syncFriends[$friend['id']] = [
+              'value' => $friend['value']
+            ];
+        }
+        $expense->friends()->sync($syncFriends);
 
         return $this->transform($expense);
     }

@@ -8,7 +8,7 @@ use App\Paka\Transformers\UsersTransformer;
 
 use Illuminate\Http\Request;
 
-class UserController extends Controller {
+class UserController extends ApiController {
 
     protected $usesTransformers;
 
@@ -25,7 +25,7 @@ class UserController extends Controller {
      */
     public function index()
     {
-
+        return $this->respond($this->usesTransformers->userInfo());
     }
 
     /**

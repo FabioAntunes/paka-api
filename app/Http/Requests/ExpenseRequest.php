@@ -1,6 +1,7 @@
 <?php namespace App\Http\Requests;
 
 use App\Http\Requests\Request;
+use JWTAuth;
 use App\Category;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
@@ -24,10 +25,10 @@ class ExpenseRequest extends Request {
     public function rules()
     {
         return [
-            'category_id' => 'required',
+            'category'    => 'required|array',
             'value'       => 'required|numeric',
             'description' => 'sometimes|string',
-            'relationships' => 'sometimes|array',
+            'friends'     => 'sometimes|array',
         ];
     }
 
@@ -37,13 +38,10 @@ class ExpenseRequest extends Request {
         // Use an "after validation hook" (see laravel docs)
         $validator->after(function ($validator)
         {
+            $category = $this->input('category');
             try
             {
-                $user = \JWTAuth::parseToken()->toUser();
-                Category::where('id', $this->input('category_id'))->where(function ($query) use ($user)
-                {
-                    $query->where('user_id', $user->id)->orWhereNull('user_id');
-                })->firstOrFail();
+                JWTAuth::parseToken()->toUser()->categories()->where('id', $category['id'])->firstOrFail();
 
             } catch (ModelNotFoundException $e)
             {
