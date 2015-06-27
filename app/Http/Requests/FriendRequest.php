@@ -21,9 +21,16 @@ class FriendRequest extends Request {
 	 */
 	public function rules()
 	{
-		return [
-			'email' => 'required|email'
-		];
+
+        $rules = [
+            'email' => 'required|email',
+            'name' => 'required|max:255',
+        ];
+        if($this->is('api/v2/friends') && $this->isMethod('put')){
+            $rules['_rev'] = 'required|max:255';
+        }
+
+        return $rules;
 	}
 
 }

@@ -21,10 +21,15 @@ class CategoryRequest extends Request {
      */
     public function rules()
     {
-        return [
+        $rules = [
             'name' => 'required|max:255',
             'color' => 'required|max:7',
         ];
+        if($this->is('api/v2/categories') && $this->isMethod('put')){
+            $rules['_rev'] = 'required|max:255';
+        }
+
+        return $rules;
     }
 
 }

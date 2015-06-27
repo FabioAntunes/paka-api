@@ -1,6 +1,7 @@
 <?php namespace App\Exceptions;
 
 use Exception;
+use GuzzleHttp\Exception\ClientException;
 use Response;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use \Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -13,7 +14,8 @@ class Handler extends ExceptionHandler {
 	 * @var array
 	 */
 	protected $dontReport = [
-		'Symfony\Component\HttpKernel\Exception\HttpException'
+		'Symfony\Component\HttpKernel\Exception\HttpException',
+		'GuzzleHttp\Exception\ClientException',
 	];
 
 	/**
@@ -40,7 +42,16 @@ class Handler extends ExceptionHandler {
 	{
         if($e instanceof NotFoundHttpException)
         {
-            return Response::view('index');
+            return Response::json('Not found', 404);
+        }
+
+        if ($e instanceof ClientException)
+        {
+            $response = $e->getResponse();
+//            $cookie = \Cookie::forget('token');
+
+//            return Response::json($response->getReasonPhrase(), $response->getStatusCode())->withCookie($cookie);
+            return Response::json($response->getReasonPhrase(), $response->getStatusCode());
         }
 		return parent::render($request, $e);
 	}

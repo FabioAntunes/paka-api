@@ -24,31 +24,19 @@ class ExpenseRequest extends Request {
      */
     public function rules()
     {
-        return [
-            'category'    => 'required|array',
+        $rules =  [
+            'category_id'    => 'required|string',
             'value'       => 'required|numeric',
             'description' => 'sometimes|string',
-            'friends'     => 'sometimes|array',
+            'shared'     => 'sometimes|array',
+            'date'     => 'required|array',
         ];
-    }
 
-    public function categoryBelongsToUser($validator)
-    {
+        if($this->is('api/v2/friends') && $this->isMethod('put')){
+            $rules['_rev'] = 'required|max:255';
+        }
 
-        // Use an "after validation hook" (see laravel docs)
-        $validator->after(function ($validator)
-        {
-            $category = $this->input('category');
-            try
-            {
-                JWTAuth::parseToken()->toUser()->categories()->where('id', $category['id'])->firstOrFail();
-
-            } catch (ModelNotFoundException $e)
-            {
-                $validator->errors()->add('category_id', 'Category id does not exist');
-            }
-
-        });
+        return $rules;
     }
 
 }

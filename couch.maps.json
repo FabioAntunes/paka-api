@@ -1,0 +1,37 @@
+/** categories **/
+{
+  "by_date": {
+    "map": "function(doc){ if (doc.type == 'expense') { emit( [doc.user_id,doc.date,doc._id,1], {_id: doc._id});if(doc.shared){for(var i in doc.shared){emit([doc.user_id,doc.date,doc._id,2,parseInt(i)],{_id: doc.shared[i].friend_id});}}}}"
+  },
+  "by_category": {
+    "map": "function(doc){ if (doc.type == 'expense') { emit( [doc.category_id,doc.date,doc._id,1], {_id: doc._id});if(doc.shared){for(var i in doc.shared){emit([doc.category_id,doc.date,doc._id,2,parseInt(i)],{_id: doc.shared[i].friend_id});}}}}"
+  },
+  "by_user": {
+    "map": "function(doc){if (doc.type == 'expense') {emit([ doc.user_id, doc._id, 1], {id:doc._id});if(doc.shared){for(var i in doc.shared){emit([doc.user_id,doc._id,parseInt(i)+2],{_id: doc.shared[i].friend_id});}}}}"
+  }
+}
+
+/*** friend ***/
+
+{
+"by_user": {
+"map": "function(doc){if (doc.type == 'friend') {emit([ doc.user_id, doc._id], {id:doc._id});}}"
+}
+}
+
+
+/*** expense ***/
+{
+"by_date": {
+"map": "function(doc){ if (doc.type == 'expense') { emit( [doc.user_id,doc.date,1], {_id: doc._id});if(doc.shared){for(var i in doc.shared){emit([doc.user_id,doc.date,2,parseInt(i)],{_id: doc.shared[i].friend_id});}}}}"
+},
+"by_category": {
+"map": "function(doc){ if (doc.type == 'expense') { emit( [doc.category_id,doc.date,doc._id,1], {_id: doc._id});if(doc.shared){for(var i in doc.shared){emit([doc.category_id,doc.date,doc._id,2,parseInt(i)],{_id: doc.shared[i].friend_id});}}}}"
+}
+}
+
+
+{
+"by_user": "function(doc, req) { if(doc.priority == 'high') { return true; }
+else { return false; }}"
+}

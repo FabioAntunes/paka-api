@@ -144,8 +144,9 @@ return [
 		'App\Providers\ConfigServiceProvider',
 		'App\Providers\EventServiceProvider',
 		'App\Providers\RouteServiceProvider',
+        'App\Providers\CouchDBProvider',
 		'Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider',
-        'Barryvdh\Cors\CorsServiceProvider',
+        'Barryvdh\Cors\ServiceProvider',
         'Tymon\JWTAuth\Providers\JWTAuthServiceProvider'
 
 	],
@@ -197,6 +198,8 @@ return [
         'View'       => 'Illuminate\Support\Facades\View',
         'JWTAuth'    => 'Tymon\JWTAuth\Facades\JWTAuth',
         'JWTFactory' => 'Tymon\JWTAuth\Facades\JWTFactory',
+        'HttpClient' => 'GuzzleHttp\Client',
+        'CouchDB'    => 'App\Paka\Facades\CouchDB',
 
 	],
 
