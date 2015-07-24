@@ -54,8 +54,7 @@ class CategoriesController extends ApiController {
     {
         $category = $this->categoriesTransformer->find($id);
 
-        return $category ? $this->respond($category) :
-            $this->setStatusCode(404)->respondWithError('Category not found');
+        return $this->respond($category);
     }
 
     /**

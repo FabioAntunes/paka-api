@@ -48,18 +48,9 @@ class FriendsController extends ApiController {
      */
     public function show($id)
     {
-        $user = CouchDB::getUser();
+        $friend = $this->friendsTransformer->find($id);
 
-        $response = CouchDB::executeAuth('get',  $this->buildUrl('by_user', [
-            'key' => [$user->name, $id]
-        ]));
-        $friend = $this->parseStream($response);
-        if($friend->rows){
-            $friend->rows[0]->doc;
-            return $this->respond($friend->rows[0]->doc);
-        }
-
-        return $this->setStatusCode(404)->respondWithError('Friend not found');
+        return $this->respond($friend);
     }
 
     /**
