@@ -1,120 +1,49 @@
 <?php namespace App\Paka\Transformers;
 
-use JWTAuth;
-use App\Expense;
-use App\Paka\Transformers\UsersTransformer;
 use CouchDB;
 
 class ExpensesTransformer extends Transformer {
 
     protected $views;
-    protected $usersTransformer;
 
     public function __construct()
     {
         $this->views['by_date'] = '_design/expenses/_view/by_date';
         $this->views['by_user'] = '_design/expenses/_view/by_user';
         $this->views['by_category'] = '_design/expenses/_view/by_category';
-        $this->usersTransformer = new UsersTransformer();
     }
 
     /**
-     * Creates a new expense for the current user
+     * Returns all the expenses for the given category or by month
      *
-     * @param $data
+     * @param string $id Category ID
+     * @param array $date
      * @return array
      */
-    public function insert($data)
+    public function categoryExpenses($id, $date = [])
     {
-        $expense = new Expense;
-        $expense->value = $data['value'];
-        $expense->description = $data['description'];
-        $expense->category_id = $data['category']['id'];
+        if($date){
+            $rawExpenses = CouchDB::executeAuth('get', $this->buildUrlForMonth('by_category', $date, [
+                'startkey' => [$id],
+                'endkey' => [$id]
+            ]));
+        }else{
+            $rawExpenses = CouchDB::executeAuth('get', $this->buildUrl('by_category', [
+                'startkey' => [$id],
+                'endkey' => [$id]
+            ]));
 
-        JWTAuth::parseToken()->toUser()->expenses()->save($expense);
-//        $self = $user->friends()->where('friendable_type', 'App\User')->where('friendable_id', $user->id)->first();
-
-
-//        $expense->friends()->attach([
-//            $self->id => [
-//                'value'   => $data['value'],
-//                'is_paid' => true,
-//                'version' => 1
-//            ]
-//        ]);
-        $syncFriends = [];
-        foreach ($data['friends'] as $friend)
-        {
-            $syncFriends[$friend['id']] = [
-                'value' => $friend['value']
-            ];
         }
-        $expense->friends()->sync($syncFriends);
-
-        return $this->transform($expense);
-    }
-
-    /**
-     * Updates the expense with the given id
-     *
-     * @param \App\Expense
-     * @param $data
-     * @return array
-     */
-    public function update(Expense $expense, $data)
-    {
-        $expense->value = $data['value'];
-        $expense->description = $data['description'];
-        $expense->category_id = $data['category']['id'];
-
-        $expense->save();
-
-        $syncFriends = [];
-        foreach ($data['friends'] as $friend)
-        {
-            $syncFriends[$friend['id']] = [
-              'value' => $friend['value']
-            ];
-        }
-        $expense->friends()->sync($syncFriends);
-
-        return $this->transform($expense);
-    }
-
-    /**
-     * Shares the expense with the users
-     *
-     * @param int $expenseId
-     * @param array $users
-     * @return array
-     */
-    public function share($expenseId, $users)
-    {
-        $expense = Expense::find($expenseId);
-
-        try
-        {
-            $expense->users()->attach($users);
-
-            return $this->transform($expense);
-
-        } catch (\Exception $e)
-        {
-            return false;
-        }
-
-    }
-
-    public function categoryExpenses($id)
-    {
-        $rawExpenses = CouchDB::executeAuth('get', $this->buildUrl('by_category', [
-            'startkey' => [$id],
-            'endkey' => [$id]
-        ]));
 
         return $this->transformCollection($rawExpenses->rows);
     }
 
+    /**
+     * Returns all expenses for the given month
+     *
+     * @param $date
+     * @return array
+     */
     public function monthlyExpenses($date)
     {
         $rawExpenses = CouchDB::executeAuth('get', $this->buildUrlForMonth('by_date',$date));
@@ -134,47 +63,101 @@ class ExpensesTransformer extends Transformer {
     {
 
         $rawExpenses = CouchDB::executeAuth('get', $this->buildUrlForMonth('by_date',$date));
-
-//        if(count($rawExpenses->rows)){
-//            $lc = null; // Aux variable to store Last Category
-//            $le = null; //Aux variable to store Last Expense
-//            foreach ($rawExpenses->rows as $row)
-//            {
-//                if(!$row->doc){
-//                    end($categories[$lc]->expenses);
-//                    $le= key($categories[$lc]->expenses);
-//
-//                    $shared = $categories[$lc]->expenses[$le]->shared[$row->key[4]];
-//                    $shared->type = 'me';
-//                    $shared->name = 'Me';
-//                    $categories[$lc]->expenses[$le]->shared[$row->key[4]] = $shared;
-//
-//                    continue;
-//
-//                }
-//
-//                if($row->doc->type == 'expense'){
-//                    $lc = $categoriesMap[$row->doc->category_id];
-//                    $categories[$lc]->expenses[] = $this->transform($row);
-//                    $categories[$lc]->total += $row->doc->value;
-//                    continue;
-//                }
-//
-//                if($row->doc->type == 'friend'){
-//                    $le= key($categories[$lc]->expenses);
-//
-//                    $shared = $categories[$lc]->expenses[$le]->shared[$row->key[4]];
-//                    $shared->type = 'friend';
-//                    $shared->name = $row->doc->name;
-//                    $shared->email = $row->doc->email;
-//                    $categories[$lc]->expenses[$le]->shared[$row->key[4]] = $shared;
-//
-//                    continue;
-//                }
-//            }
-//        }
-
         return $this->transformCollectionForCategories($rawExpenses->rows, $categories, $categoriesMap);
+    }
+
+    /**
+     * Creates a new expense for the current user
+     *
+     * @param array $expenseData
+     * @return array
+     */
+    public function insert($expenseData)
+    {
+        $user = CouchDB::getUser();
+
+        $doc = new \stdClass();
+        $doc->value = $expenseData['value'];
+        $doc->description = $expenseData['description'];
+        $doc->type = 'expense';
+        $doc->category_id = $expenseData['category_id'];
+        $doc->user_id = $user->name;
+        $doc->date = $expenseData['date'];
+
+        if(count($expenseData['shared']) > 1){
+            $doc->shared = [];
+            foreach ($expenseData['shared'] as $friend)
+            {
+                $doc->shared[] = [
+                    'friend_id' => $friend['friend_id'],
+                    'value' => $friend['value'],
+                ];
+            }
+
+        }
+
+        $response = CouchDB::executeAuth('post', $this->database, [
+            'json' => $doc
+        ]);
+
+        return $response;
+    }
+
+    /**
+     * Find the expense with the given id
+     *
+     * @param $id
+     * @return array
+     */
+    public function find($id)
+    {
+        $expenseInfo = CouchDB::executeAuth('get',  $this->buildUrl('by_user',[
+            'startkey' => [$id],
+            'endkey' => [$id]
+        ]));
+
+        if(!$expenseInfo->rows){
+            abort(404, "Expense Not found");
+        }
+
+        $reversed = array_reverse($expenseInfo->rows);
+        $expense = $this->recursiveTransform($reversed, array_pop($reversed));
+        return $expense;
+    }
+
+    /**
+     * Updates the expense with the given id
+     *
+     * @param string $id
+     * @param $expenseData
+     * @return array
+     */
+    public function update($id, $expenseData)
+    {
+        $expense = $this->find($id);
+
+        $expense->_rev = $expenseData['_rev'] ? $expenseData['_rev'] : $expense->_rev ;
+        $expense->description = $expenseData['description'] ? $expenseData['description'] : $expense->description ;
+        $expense->value = $expenseData['value'] ? $expenseData['value'] : $expense->value ;
+        $expense->category_id = $expenseData['category_id'] ? $expenseData['category_id'] : $expense->category_id ;
+        $expense->date = $expenseData['date'] ? $expenseData['date'] : $expense->date ;
+
+        $expense->shared = [];
+        if(count($expenseData['shared']) > 1){
+            foreach ($expenseData['shared'] as $friend)
+            {
+                $expense->shared[] = [
+                    'friend_id' => $friend['friend_id'],
+                    'value' => $friend['value'],
+                ];
+            }
+        }
+
+        $response = CouchDB::executeAuth('post', $this->database.$id, [
+            'json' => $expense
+        ]);
+
+        return $response;
     }
 
     /**
@@ -185,7 +168,14 @@ class ExpensesTransformer extends Transformer {
      */
     public function destroy($id)
     {
-        return Expense::destroy($id);
+        $expense = $this->find($id);
+        $expense->_deleted = true;
+
+        $response = CouchDB::executeAuth('put', 'paka/'.$id, [
+            'json' => $expense
+        ]);
+
+        return $response;
     }
 
     /**

@@ -1,18 +1,17 @@
 <?php namespace App\Http\Controllers\V2;
 
 use App\Http\Requests\FriendRequest;
-use App\Paka\Transformers\UsersTransformer;
-use CouchDB;
+use App\Paka\Transformers\FriendsTransformer;
 
 class FriendsController extends ApiController {
 
     /**
-     * @var UsersTransformer
+     * @var FriendsTransformer
      */
-    protected $usersTransformer;
+    protected $friendsTransformer;
 
     public function __construct(){
-        $this->middleware('couch.auth');
+        $this->friendsTransformer = new FriendsTransformer();
         $this->views['by_user'] = '_design/friends/_view/by_user';
     }
 
@@ -23,23 +22,7 @@ class FriendsController extends ApiController {
 	 */
 	public function index()
 	{
-        $user = CouchDB::getUser();
-
-        $response = CouchDB::executeAuth('get', $this->buildUrl('by_user', [
-            'startkey' => [$user->name],
-            'endkey' => [$user->name, json_decode ("{}")]
-        ]));
-        $friendViews = $this->parseStream($response);
-
-        $friends = [];
-        if(count($friendViews->rows)){
-            foreach ($friendViews->rows as $row)
-            {
-                $friends[] = $row->doc;
-            }
-        }
-
-
+        $friends = $this->friendsTransformer->all();
         return $this->respond($friends);
 	}
 
@@ -51,20 +34,10 @@ class FriendsController extends ApiController {
      */
 	public function store(FriendRequest $request)
 	{
-        $user = CouchDB::getUser();
-
         $requestData = $request->only('_rev', 'email', 'name');
-        $doc = new \stdClass();
-        $doc->email = $requestData['email'];
-        $doc->name = $requestData['name'];
-        $doc->type = 'friend';
-        $doc->user_id = $user->name;
+        $response = $this->friendsTransformer->insert($requestData);
 
-        $response = CouchDB::executeAuth('post', 'paka/', [
-            'json' => $doc
-        ]);
-
-        return $this->respondWithStream($response);
+        return $this->respond($response);
 	}
 
     /**
@@ -98,27 +71,29 @@ class FriendsController extends ApiController {
      */
     public function update($id, FriendRequest $request)
     {
-        $user = CouchDB::getUser();
+        $requestData = $request->only('_rev', 'name', 'email');
+        $response = $this->friendsTransformer->update($id, $requestData);
 
-        $response = CouchDB::executeAuth('get',  $this->buildUrl('by_user', [
-            'key' => [$user->name, $id]
-        ]));
-        $friend = $this->parseStream($response);
-        if($friend->rows){
-            $requestData = $request->only('_rev', 'name', 'email');
-            $doc = $friend->rows[0]->doc;
-            $doc->_rev = $requestData['_rev'];
-            $doc->email = $requestData['email'];
-            $doc->name = $requestData['name'];
+//        $user = CouchDB::getUser();
+//
+//        $response = CouchDB::executeAuth('get',  $this->buildUrl('by_user', [
+//            'key' => [$user->name, $id]
+//        ]));
+//        $friend = $this->parseStream($response);
+//        if($friend->rows){
+//            $doc = $friend->rows[0]->doc;
+//            $doc->_rev = $requestData['_rev'];
+//            $doc->email = $requestData['email'];
+//            $doc->name = $requestData['name'];
+//
+//            $response = CouchDB::executeAuth('put', 'paka/'.$id, [
+//                'json' => $doc
+//            ]);
+//
+//            return $this->respondWithStream($response);
+//        }
 
-            $response = CouchDB::executeAuth('put', 'paka/'.$id, [
-                'json' => $doc
-            ]);
-
-            return $this->respondWithStream($response);
-        }
-
-        return $this->setStatusCode(404)->respondWithError('Friend not found');
+        return $this->respond($response);
     }
 
 	/**
@@ -129,25 +104,8 @@ class FriendsController extends ApiController {
 	 */
 	public function destroy($id)
 	{
-        $user = CouchDB::getUser();
-
-        $response = CouchDB::executeAuth('get',  $this->buildUrl('by_user', [
-            'key' => [$user->name, $id]
-        ]));
-        $friend = $this->parseStream($response);
-        if($friend->rows){
-
-            $doc = $friend->rows[0]->doc;
-            $doc->_deleted = true;
-
-            $response = CouchDB::executeAuth('put', 'paka/'.$id, [
-                'json' => $doc
-            ]);
-
-            return $this->respondWithStream($response);
-        }
-
-        return $this->setStatusCode(404)->respondWithError('Friend not found');
+        $response = $this->friendsTransformer->destroy($id);
+        return $this->respond($response);
 	}
 
 }

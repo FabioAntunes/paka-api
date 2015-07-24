@@ -3,8 +3,7 @@
 use App\Http\Requests;
 use App\Http\Requests\CategoryRequest;
 use App\Paka\Transformers\CategoriesTransformer;
-use Illuminate\Http\Request ;
-use CouchDB;
+use Illuminate\Http\Request;
 
 
 
@@ -70,7 +69,7 @@ class CategoriesController extends ApiController {
     {
         $requestData = $request->only('_rev', 'name', 'color');
         $category = $this->categoriesTransformer->update($id, $requestData);
-        return $category ? $this->respond($category) : $this->setStatusCode(404)->respondWithError('Category not found');
+        return $category;
     }
 
     /**
@@ -81,36 +80,8 @@ class CategoriesController extends ApiController {
      */
     public function destroy($id)
     {
-        $this->categoriesTransformer->delete($id);
-//        $user = CouchDB::getUser();
-//
-//        $response = CouchDB::executeAuth('get',  $this->buildUrl('by_user', [
-//            'key' => [$user->name, $id]
-//        ]));
-//        $category = $this->parseStream($response);
-//        if($category->rows){
-//
-//            $doc = $category->rows[0]->doc;
-//            $doc->_deleted = true;
-//
-//            $response = CouchDB::executeAuth('put', 'paka/'.$id, [
-//                'json' => $doc
-//            ]);
-//
-//            return $this->respondWithStream($response);
-//        }
-//
-//        return $this->setStatusCode(404)->respondWithError('Category not found');
-    }
-
-    /**
-     * Return categories with expenses
-     *
-     * @return \Response
-     */
-    public function expenses()
-    {
-        //
+        $response = $this->categoriesTransformer->destroy($id);
+        return $this->respond($response);
     }
 
 }

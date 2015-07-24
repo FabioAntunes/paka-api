@@ -1,27 +1,34 @@
 <?php namespace App\Paka\Transformers;
 
-use App\Friend;
-use App\User;
-use App\Invite;
-use JWTAuth;
+use CouchDB;
 
 class UsersTransformer extends Transformer {
 
+    protected $views;
+
+    public function __construct()
+    {
+        $this->views['by_user'] = '_design/friends/_view/by_user';
+    }
+
     /**
-     * @param \App\User $user
+     * @param \stdClass $user
      * @return array with transformed user
      */
     public function transform($user)
     {
-        return [
-            'id'    => $user->id,
-            'name'  => $user->name,
-            'email' => $user->email,
-        ];
+        $userObj = new \stdClass();
+        $userObj->_id = $user->doc->_id;
+        $userObj->_rev = $user->doc->_rev;
+        $userObj->name = $user->doc->name;
+        $userObj->email = $user->doc->email;
+        $userObj->type = $user->doc->type;
+
+        return $userObj;
     }
 
     /**
-     * @param \App\Friend $friend
+     * @param \stdClass $friend
      * @return array with transformed friend
      */
     public function transformFriend($friend)
@@ -38,19 +45,6 @@ class UsersTransformer extends Transformer {
     }
 
     /**
-     * @param \App\Friend $friend
-     * @return array with transformed friend
-     */
-    public function transformFriendWithExpense($friend)
-    {
-        return array_merge($this->transformFriend($friend), [
-            'value'   => $friend->pivot->value,
-            'isPaid'  => (bool) $friend->pivot->is_paid,
-            'version' => $friend->pivot->version,
-        ]);
-    }
-
-    /**
      * Transforms a collection of friends
      *
      * @param array $items of friends
@@ -62,17 +56,6 @@ class UsersTransformer extends Transformer {
     }
 
     /**
-     * Transforms a collection of friends with expenses
-     *
-     * @param array $items of friends
-     * @return array transformed items
-     */
-    public function transformFriendWithExpenseCollection(array $items)
-    {
-        return array_map([$this, 'transformFriendWithExpense'], $items);
-    }
-
-    /**
      * @return array with user's friends
      */
     public function friends()
@@ -81,39 +64,6 @@ class UsersTransformer extends Transformer {
             JWTAuth::parseToken()->toUser()->friends()
                 ->with('friendable')->userFriends()->get()->all()
         );
-    }
-
-    /**
-     * @param array $friendData
-     * @return array|bool
-     */
-    public function attachFriend($friendData)
-    {
-        $friend = new Friend;
-        $friend->name = $friendData['name'];
-        try
-        {
-            $user = User::whereEmail($friendData['email'])->firstOrFail();
-            $friend->friendable()->associate($user);
-
-        } catch (\Exception $e)
-        {
-            try
-            {
-                $invite = Invite::firstOrCreate(['email' => $friendData['email']]);
-                $friend->friendable()->associate($invite);
-
-            } catch (\Exception $e)
-            {
-                $friend->delete();
-
-                return false;
-            }
-        }
-
-        JWTAuth::parseToken()->toUser()->friends()->save($friend);
-
-        return $this->transformFriend($friend);
     }
 
     /**

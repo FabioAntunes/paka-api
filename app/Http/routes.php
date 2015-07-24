@@ -37,7 +37,6 @@ Route::group(['prefix' => 'api/v2', 'middleware' => ['cors', 'couch.auth']], fun
     Route::resource('categories','V2\CategoriesController');
     Route::resource('categories.expenses','V2\CategoriesExpensesController', ['except' =>['create', 'edit']]);
     Route::resource('friends','V2\FriendsController', ['except' =>['create', 'update', 'edit']]);
-//    Route::get('categories/expenses','V2\CategoriesController@expenses');
 
     Route::post('auth/login', ['as' => 'api.v2.auth.login', 'uses' => 'V2\AuthController@login']);
     Route::delete('auth/logout', ['as' => 'api.v2.auth.logout', 'uses' => 'V2\AuthController@logout']);

@@ -16,6 +16,19 @@ class CategoriesTransformer extends Transformer {
     }
 
     /**
+     * Returns all generic categories
+     *
+     * @return array with categories
+     */
+    public function all()
+    {
+        $rawCategories = CouchDB::executeAuth('get', $this->buildUrl('by_user'));
+        $categories = $this->transformCollection($rawCategories->rows);
+
+        return $categories;
+    }
+
+    /**
      * Creates a new category for the current user
      *
      * @param array $categoryData
@@ -34,49 +47,6 @@ class CategoriesTransformer extends Transformer {
             'json' => $doc
         ]);
 
-
-        return $response;
-    }
-
-    /**
-     * Returns all generic categories
-     *
-     * @return array with categories
-     */
-    public function all()
-    {
-        $rawCategories = CouchDB::executeAuth('get', $this->buildUrl('by_user'));
-        $categories = $this->transformCollection($rawCategories->rows);
-
-        return $categories;
-    }
-
-    /**
-     * Updates the category with the given id
-     *
-     * @param string $id
-     * @param array $categoryData with updated data
-     * @return mixed
-     */
-    public function update($id, $categoryData)
-    {
-
-        $category = CouchDB::executeAuth('get',  $this->buildUrl('by_user', [
-            'key' => [$id]
-        ]));
-
-        if(!$category->rows){
-            abort(404, "Category Not found");
-        }
-
-        $doc = $category->rows[0]->doc;
-        $doc->_rev = $categoryData['_rev'];
-        $doc->name = $categoryData['name'];
-        $doc->color = $categoryData['color'];
-
-        $response = CouchDB::executeAuth('put', $this->database.$id, [
-            'json' => $doc
-        ]);
         return $response;
     }
 
@@ -96,7 +66,29 @@ class CategoriesTransformer extends Transformer {
             abort(404, "Category Not found");
         }
 
-        return $category->rows ? $this->transform($category->rows[0]) : [];
+        return $this->transform($category->rows[0]);
+    }
+
+    /**
+     * Updates the category with the given id
+     *
+     * @param string $id
+     * @param array $categoryData with updated data
+     * @return mixed
+     */
+    public function update($id, $categoryData)
+    {
+
+        $category = $this->find($id);
+
+        $category->_rev = $categoryData['_rev'];
+        $category->name = $categoryData['name'];
+        $category->color = $categoryData['color'];
+
+        $response = CouchDB::executeAuth('put', $this->database.$id, [
+            'json' => $category
+        ]);
+        return $response;
     }
 
     public function allWithExpenses($date)
@@ -140,17 +132,9 @@ class CategoriesTransformer extends Transformer {
         return $categoriesTransformed;
     }
 
-    public function delete($id)
+    public function destroy($id)
     {
-        $category = CouchDB::executeAuth('get',  $this->buildUrl('by_user', [
-            'key' => [$id]
-        ]));
-
-        if(!$category->rows){
-            abort(404, "Category Not found");
-        }
-
-        $category = $this->transform($category->rows[0]);
+        $category = $this->find($id);
 
         $expenses = $this->expensesTransformer->categoryExpenses($id);
         if($expenses){
@@ -166,9 +150,6 @@ class CategoriesTransformer extends Transformer {
                 ]
             ]);
         }
-
-
-
 
         $category->_deleted = true;
 
