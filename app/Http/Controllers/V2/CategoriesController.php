@@ -2,102 +2,32 @@
 
 use App\Http\Requests;
 use App\Http\Requests\CategoryRequest;
+use App\Paka\Transformers\CategoriesTransformer;
+use Illuminate\Http\Request ;
 use CouchDB;
 
 
 
 class CategoriesController extends ApiController {
 
-
+    protected $categoriesTransformer;
 
     public function __construct()
     {
-        $this->middleware('couch.auth');
-        $this->views['by_user'] = '_design/categories/_view/by_user';
-        $this->views['by_date'] = '_design/categories/_view/by_date';
-        $this->views['exp_by_date'] = '_design/expenses/_view/by_date';
+        $this->categoriesTransformer = new CategoriesTransformer();
     }
 
     /**
      * Display a listing of the resource.
      *
+     * @param Request $request
      * @return \Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $user = CouchDB::getUser();
-
-        $response = CouchDB::executeAuth('get', $this->buildUrl('by_user', [
-            'startkey' => [$user->name],
-            'endkey' => [$user->name, json_decode ("{}")]
-        ]));
-        $categoriesViews = $this->parseStream($response);
-
-        $response = CouchDB::executeAuth('get', $this->buildUrlCurrentMonth('exp_by_date', [
-            'startkey' => [$user->name],
-            'endkey' => [$user->name]
-        ]));
-        $expensesViews = $this->parseStream($response);
-
-        $categoriesTree = [];
-        $categoriesMap = [];
-        if(count($categoriesViews->rows)){
-            $counter = 0;
-            foreach ($categoriesViews->rows as $row)
-            {
-                if($row->doc->type == 'category'){
-                    $row->doc->expenses = [];
-                    $row->doc->total = 0;
-                    $categoriesTree[] = $row->doc;
-                    $categoriesMap[$row->doc->_id] = $counter;
-                    $counter++;
-
-                    continue;
-                }
-            }
-        }
-
-        if(count($expensesViews->rows)){
-            $lastCat = null;
-            foreach ($expensesViews->rows as $row)
-            {
-                if(!$row->doc){
-                    end($categoriesTree[$lastCat]->expenses);
-                    $lastExp = key($categoriesTree[$lastCat]->expenses);
-
-                    $shared = $categoriesTree[$lastCat]->expenses[$lastExp]->shared[$row->key[4]];
-                    $shared->type = 'me';
-                    $shared->name = 'Me';
-                    $categoriesTree[$lastCat]->expenses[$lastExp]->shared[$row->key[4]] = $shared;
-
-                    continue;
-
-                }
-
-                if($row->doc->type == 'expense'){
-                    $lastCat = $categoriesMap[$row->doc->category_id];
-                    $row->doc->shared = property_exists($row->doc, 'shared') ? $row->doc->shared : [];
-                    $categoriesTree[$lastCat]->expenses[] = $row->doc;
-                    $categoriesTree[$lastCat]->total += $row->doc->value;
-                    continue;
-                }
-
-                if($row->doc->type == 'friend'){
-                    $lastExp = key($categoriesTree[$lastCat]->expenses);
-
-                    $shared = $categoriesTree[$lastCat]->expenses[$lastExp]->shared[$row->key[4]];
-                    $shared->type = 'friend';
-                    $shared->name = $row->doc->name;
-                    $shared->email = $row->doc->email;
-                    $categoriesTree[$lastCat]->expenses[$lastExp]->shared[$row->key[4]] = $shared;
-
-                    continue;
-                }
-            }
-        }
-
-
-        return $this->respond($categoriesTree);
+        $date = $this->parseDate($request);
+        $categories = $this->categoriesTransformer->allWithExpenses($date);
+        return $this->respond($categories);
     }
 
     /**
@@ -108,20 +38,11 @@ class CategoriesController extends ApiController {
      */
     public function store(CategoryRequest $request)
     {
-        $user = CouchDB::getUser();
 
         $requestData = $request->only('name', 'color');
-        $doc = new \stdClass();
-        $doc->name = $requestData['name'];
-        $doc->color = $requestData['color'];
-        $doc->type = 'category';
-        $doc->user_id = $user->name;
+        $response = $this->categoriesTransformer->insert($requestData);
 
-        $response = CouchDB::executeAuth('post', 'paka/', [
-            'json' => $doc
-        ]);
-
-        return $this->respondWithStream($response);
+        return $this->respond($response);
     }
 
     /**
@@ -132,18 +53,10 @@ class CategoriesController extends ApiController {
      */
     public function show($id)
     {
-        $user = CouchDB::getUser();
+        $category = $this->categoriesTransformer->find($id);
 
-        $response = CouchDB::executeAuth('get',  $this->buildUrl('by_user', [
-            'key' => [$user->name, $id]
-        ]));
-        $category = $this->parseStream($response);
-        if($category->rows){
-            $category->rows[0]->doc;
-            return $this->respond($category->rows[0]->doc);
-        }
-
-        return $this->setStatusCode(404)->respondWithError('Category not found');
+        return $category ? $this->respond($category) :
+            $this->setStatusCode(404)->respondWithError('Category not found');
     }
 
     /**
@@ -155,27 +68,9 @@ class CategoriesController extends ApiController {
      */
     public function update($id, CategoryRequest $request)
     {
-        $user = CouchDB::getUser();
-
-        $response = CouchDB::executeAuth('get',  $this->buildUrl('by_user', [
-            'key' => [$user->name, $id]
-        ]));
-        $category = $this->parseStream($response);
-        if($category->rows){
-            $requestData = $request->only('_rev', 'name', 'color');
-            $doc = $category->rows[0]->doc;
-            $doc->_rev = $requestData['_rev'];
-            $doc->name = $requestData['name'];
-            $doc->color = $requestData['color'];
-
-            $response = CouchDB::executeAuth('put', 'paka/'.$id, [
-                'json' => $doc
-            ]);
-
-            return $this->respondWithStream($response);
-        }
-
-        return $this->setStatusCode(404)->respondWithError('Category not found');
+        $requestData = $request->only('_rev', 'name', 'color');
+        $category = $this->categoriesTransformer->update($id, $requestData);
+        return $category ? $this->respond($category) : $this->setStatusCode(404)->respondWithError('Category not found');
     }
 
     /**
@@ -186,25 +81,26 @@ class CategoriesController extends ApiController {
      */
     public function destroy($id)
     {
-        $user = CouchDB::getUser();
-
-        $response = CouchDB::executeAuth('get',  $this->buildUrl('by_user', [
-            'key' => [$user->name, $id]
-        ]));
-        $category = $this->parseStream($response);
-        if($category->rows){
-
-            $doc = $category->rows[0]->doc;
-            $doc->_deleted = true;
-
-            $response = CouchDB::executeAuth('put', 'paka/'.$id, [
-                'json' => $doc
-            ]);
-
-            return $this->respondWithStream($response);
-        }
-
-        return $this->setStatusCode(404)->respondWithError('Category not found');
+        $this->categoriesTransformer->delete($id);
+//        $user = CouchDB::getUser();
+//
+//        $response = CouchDB::executeAuth('get',  $this->buildUrl('by_user', [
+//            'key' => [$user->name, $id]
+//        ]));
+//        $category = $this->parseStream($response);
+//        if($category->rows){
+//
+//            $doc = $category->rows[0]->doc;
+//            $doc->_deleted = true;
+//
+//            $response = CouchDB::executeAuth('put', 'paka/'.$id, [
+//                'json' => $doc
+//            ]);
+//
+//            return $this->respondWithStream($response);
+//        }
+//
+//        return $this->setStatusCode(404)->respondWithError('Category not found');
     }
 
     /**

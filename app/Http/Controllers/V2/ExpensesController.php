@@ -1,11 +1,11 @@
 <?php namespace App\Http\Controllers\V2;
 
 use App\Expense;
-use CouchDB;
 use App\Http\Requests\ExpenseRequest;
 use App\Paka\Transformers\ExpensesTransformer;
+use Illuminate\Http\Request ;
+use CouchDB;
 
-use Illuminate\Http\Request;
 
 class ExpensesController extends ApiController {
 
@@ -16,66 +16,18 @@ class ExpensesController extends ApiController {
 
     public function __construct(){
         $this->middleware('couch.auth');
-//        $this->expensesTransformer = new ExpensesTransformer();
-        $this->views['by_date'] = '_design/expenses/_view/by_date';
-        $this->views['by_user'] = '_design/expenses/_view/by_user';
+        $this->expensesTransformer = new ExpensesTransformer();
     }
 
     /**
      * Display a listing of the resource.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      * @return \Response
      */
 	public function index(Request $request)
 	{
-        $user = CouchDB::getUser();
-
-        $response = CouchDB::executeAuth('get', $this->buildUrlCurrentMonth('by_date', [
-            'startkey' => [$user->name],
-            'endkey' => [$user->name]
-        ]));
-        $expensesViews = json_decode($response->getBody()->getContents());
-        $expenses = [];
-        if(count($expensesViews->rows)){
-            $lastCat = null;
-            foreach ($expensesViews->rows as $row)
-            {
-                if(!$row->doc){
-                    end($expenses);
-                    $lastExp = key($expenses);
-
-                    $shared = $expenses[$lastExp]->shared[$row->key[4]];
-                    $shared->type = 'me';
-                    $shared->name = 'Me';
-                    $expenses[$lastExp]->shared[$row->key[4]] = $shared;
-
-                    continue;
-
-                }
-
-                if($row->doc->type == 'expense'){
-                    $row->doc->shared = property_exists($row->doc, 'shared') ? $row->doc->shared : [];
-                    $expenses[] = $row->doc;
-                    continue;
-                }
-
-                if($row->doc->type == 'friend'){
-                    $lastExp = key($expenses);
-
-                    $shared = $expenses[$lastExp]->shared[$row->key[4]];
-                    $shared->type = 'friend';
-                    $shared->name = $row->doc->name;
-                    $shared->email = $row->doc->email;
-                    $expenses[$lastExp]->shared[$row->key[4]] = $shared;
-
-                    continue;
-                }
-            }
-        }
-
-
-        return $this->respond($expenses);
+        return $this->respond($this->expensesTransformer->monthlyExpenses($this->parseDate($request)));
 	}
 
     /**

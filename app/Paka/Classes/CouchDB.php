@@ -30,16 +30,15 @@ class CouchDB {
                 'Cookie'=> 'AuthSession='.$this->token
             ]
         ];
-
-        return $this->execute($method, $url, array_merge_recursive($defaultOptions, $options));
+        $response = $this->execute($method, $url, array_merge_recursive($defaultOptions, $options));
+        return $this->parseStream($response);
 
     }
 
 
     public function authenticate()
     {
-        $response = $this->executeAuth('get', '_session');
-        $user = json_decode($response->getBody()->getContents());
+        $user = $this->executeAuth('get', '_session');
 
         if ($user->userCtx->name != null)
         {
@@ -73,6 +72,10 @@ class CouchDB {
     public function getUser()
     {
         return $this->user;
+    }
 
+    public function parseStream($response)
+    {
+        return json_decode($response->getBody()->getContents());
     }
 }

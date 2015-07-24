@@ -25,7 +25,7 @@ class AuthController extends ApiController {
             'cookies' => $jar
         ]);
 
-        $user = $this->parseStream($response);
+        $user = CouchDB::parseStream($response);
 
         $customClaims = ['name' => $credentials['email'], 'token' => $jar->toArray()[0]['Value']];
 

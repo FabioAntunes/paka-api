@@ -1,10 +1,19 @@
 <?php namespace App\Paka\Transformers;
 
-use App\Category;
 use App\Paka\Transformers\ExpensesTransformer;
-use JWTAuth;
+use CouchDB;
 
 class CategoriesTransformer extends Transformer {
+
+    protected $views;
+    protected $categoriesMap;
+    protected $expensesTransformer;
+
+    public function __construct(){
+        $this->expensesTransformer = new ExpensesTransformer();
+        $this->views['by_user'] = '_design/categories/_view/by_user';
+        $this->views['by_date'] = '_design/categories/_view/by_date';
+    }
 
     /**
      * Creates a new category for the current user
@@ -14,11 +23,19 @@ class CategoriesTransformer extends Transformer {
      */
     public function insert($categoryData)
     {
-        $category = new Category;
-        $category->name = $categoryData['name'];
-        $category->color = $categoryData['color'];
+        $user = CouchDB::getUser();
+        $doc = new \stdClass();
+        $doc->name = $categoryData['name'];
+        $doc->color = $categoryData['color'];
+        $doc->type = 'category';
+        $doc->user_id = $user->name;
 
-        return $this->transform(JWTAuth::parseToken()->toUser()->categories()->save($category));
+        $response = CouchDB::executeAuth('post', $this->database, [
+            'json' => $doc
+        ]);
+
+
+        return $response;
     }
 
     /**
@@ -28,29 +45,39 @@ class CategoriesTransformer extends Transformer {
      */
     public function all()
     {
-        return $this->transformCollection(JWTAuth::parseToken()->toUser()->categories()->get()->all());
+        $rawCategories = CouchDB::executeAuth('get', $this->buildUrl('by_user'));
+        $categories = $this->transformCollection($rawCategories->rows);
+
+        return $categories;
     }
 
     /**
      * Updates the category with the given id
      *
-     * @param \App\Category $category
+     * @param string $id
      * @param array $categoryData with updated data
-     * @return array
+     * @return mixed
      */
-    public function update(Category $category, $categoryData)
+    public function update($id, $categoryData)
     {
-        if($category->name != $categoryData['name'] || $category->color != $categoryData['color']){
-            $category->name = $categoryData['name'];
-            $category->color = $categoryData['color'];
-            $category->version = $category->version+1;
 
-            $category->save();
+        $category = CouchDB::executeAuth('get',  $this->buildUrl('by_user', [
+            'key' => [$id]
+        ]));
 
+        if(!$category->rows){
+            abort(404, "Category Not found");
         }
 
+        $doc = $category->rows[0]->doc;
+        $doc->_rev = $categoryData['_rev'];
+        $doc->name = $categoryData['name'];
+        $doc->color = $categoryData['color'];
 
-        return $this->transform($category);
+        $response = CouchDB::executeAuth('put', $this->database.$id, [
+            'json' => $doc
+        ]);
+        return $response;
     }
 
     /**
@@ -61,49 +88,95 @@ class CategoriesTransformer extends Transformer {
      */
     public function find($id)
     {
-        return $this->transform(Category::find($id));
+        $category = CouchDB::executeAuth('get',  $this->buildUrl('by_user', [
+            'key' => [$id]
+        ]));
+
+        if(!$category->rows){
+            abort(404, "Category Not found");
+        }
+
+        return $category->rows ? $this->transform($category->rows[0]) : [];
     }
 
-    public function allWithExpenses()
+    public function allWithExpenses($date)
     {
-        return $this->transformColletionWithExpenses(JWTAuth::parseToken()->toUser()->categories()->with('expenses')->get()->all());
+        $categories = $this->all();
+        $this->expensesTransformer->monthlyCategoriesExpenses($categories, $this->categoriesMap, $date);
+
+        return $categories;
     }
 
     /**
-     * @param \App\Category $category
+     * @param \stdClass $category
      * @return array with transformed category
      */
     public function transform($category)
     {
-        return $category ? [
-            'id'         => $category->id,
-            'name'       => $category->name,
-            'color'       => $category->color,
-            'total'       => $category->total,
-            'created_at' => $category->created_at,
-            'update_at'  => $category->updated_at,
-        ] : [];
+        $categoryObj = new \stdClass();
+        $categoryObj->_id = $category->doc->_id;
+        $categoryObj->_rev = $category->doc->_rev;
+        $categoryObj->type = $category->doc->type;
+        $categoryObj->name = $category->doc->name;
+        $categoryObj->color = $category->doc->color;
+        $categoryObj->user_id = $category->doc->user_id;
+        $categoryObj->expenses = [];
+        $categoryObj->total = 0;
+
+        return $categoryObj;
     }
 
-    /**
-     * @param $category
-     * @return array of transformed items
-     */
-    public function transformWithExpenses($category)
-    {
-        $expensesTransformer = new ExpensesTransformer();
-        return array_add($this->transform($category), 'expenses', $expensesTransformer->transformCollection($category->expenses->all()));
+    public function transformCollection(array $categories){
+        $categoriesTransformed = [];
+        foreach ($categories as $category)
+        {
+            if($category->doc->type == 'category'){
+                $this->categoriesMap[$category->doc->_id] = count($this->categoriesMap);
+                $category = $this->transform($category);
+                $categoriesTransformed[] = $category;
+
+            }
+        }
+        return $categoriesTransformed;
     }
 
-    /**
-     * Transforms a collection of categories, with expenses
-     *
-     * @param array $items
-     * @return array of transformed items
-     */
-    public function transformColletionWithExpenses(array $items)
+    public function delete($id)
     {
-        return array_map([$this, 'transformWithExpenses'], $items);
+        $category = CouchDB::executeAuth('get',  $this->buildUrl('by_user', [
+            'key' => [$id]
+        ]));
+
+        if(!$category->rows){
+            abort(404, "Category Not found");
+        }
+
+        $category = $this->transform($category->rows[0]);
+
+        $expenses = $this->expensesTransformer->categoryExpenses($id);
+        if($expenses){
+            foreach ($expenses as $key => $expense )
+            {
+                $expense->_deleted = true;
+                $expenses[$key] = $expense;
+            }
+
+            $response = CouchDB::executeAuth('post',  $this->database.'_bulk_docs', [
+                'json' => [
+                    'docs' => $expenses
+                ]
+            ]);
+        }
+
+
+
+
+        $category->_deleted = true;
+
+        $response = CouchDB::executeAuth('put', 'paka/'.$id, [
+            'json' => $category
+        ]);
+
+        return $response;
     }
 
 }

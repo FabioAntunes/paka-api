@@ -2,8 +2,8 @@
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Response as IlluminateResponse;
+use Illuminate\Http\Request;
 use Response;
-use HttpClient;
 
 class ApiController extends Controller {
 
@@ -85,34 +85,15 @@ class ApiController extends Controller {
         return $this;
     }
 
-    public function parseStream($response)
+    /**
+     * Parse date from the request, defaults to current year and month
+     * @param Request $request
+     */
+    public function parseDate(Request $request)
     {
-        return json_decode($response->getBody()->getContents());
-    }
+        $date['month'] = intval($request->input('month', date('n')));
+        $date['year'] = intval($request->input('year', date('Y')));
 
-    public function buildUrl($view, $keys = [], $url=false){
-        $url = $url ? $url : $this->database;
-        $url .= $this->views[$view].'?include_docs=true';
-
-        if(count($keys)){
-            if(array_key_exists('startkey', $keys) && array_key_exists('endkey', $keys)){
-                $url.='&startkey='.json_encode($keys['startkey']).'&endkey='.json_encode($keys['endkey']);
-            }else if(array_key_exists('key', $keys)){
-                $url.='&key='.json_encode($keys['key']);
-            }
-        }
-
-        return $url;
-    }
-
-    public function buildUrlCurrentMonth($view, $keys, $url=false, $appendObject = true){
-
-        $keys['startkey'][] = [intval(date('Y')), intval(date('n')), null];
-        if($appendObject){
-            $keys['endkey'][] = [intval(date('Y')), intval(date('n')), 31];
-            $keys['endkey'][] = json_decode ("{}");
-        }
-
-        return $this->buildUrl($view, $keys, $url);
+        return $date;
     }
 }

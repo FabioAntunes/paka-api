@@ -26,11 +26,15 @@ class UsersTransformer extends Transformer {
      */
     public function transformFriend($friend)
     {
-        return [
-            'id'    => $friend->id,
-            'name'  => $friend->name,
-            'email' => $friend->friendable->email,
-        ];
+        $friendObj = new \stdClass();
+        $friendObj->_id = $friend->doc->_id;
+        $friendObj->_rev = $friend->doc->_rev;
+        $friendObj->email = $friend->doc->email;
+        $friendObj->name = $friend->doc->name;
+        $friendObj->type = $friend->doc->type;
+        $friendObj->user_id = $friend->doc->user_id;
+
+        return $friendObj;
     }
 
     /**
