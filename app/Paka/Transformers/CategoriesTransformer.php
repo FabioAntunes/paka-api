@@ -160,4 +160,54 @@ class CategoriesTransformer extends Transformer {
         return $response;
     }
 
+    public function seedCategories()
+    {
+        $user = CouchDB::getUser();
+
+
+        $categories = [
+            'docs' => [
+                [
+                    'type' => 'category',
+                    'name'    => 'Health',
+                    'color'   => '#AD242D',
+                    'user_id' => $user->name,
+                ],
+                [
+                    'type' => 'category',
+                    'name'    => 'Food',
+                    'color'   => '#BEE6CE',
+                    'user_id' => $user->name,
+                ],
+                [
+                    'type' => 'category',
+                    'name'    => 'Transportation',
+                    'color'   => '#D98D07',
+                    'user_id' => $user->name,
+                ],
+                [
+                    'type' => 'category',
+                    'name'    => 'Leisure',
+                    'color'   => '#21A179',
+                    'user_id' => $user->name,
+                ],
+                [
+                    'type' => 'category',
+                    'name'    => 'Education',
+                    'color'   => '#073B3A',
+                    'user_id' => $user->name,
+                ]
+            ]
+        ];
+
+        $response = CouchDB::executeAuth('POST', 'paka/_bulk_docs', [
+            'headers' => [
+                'Content-Type'=> 'application/json'
+            ],
+            'json' => $categories
+        ]);
+
+        return $response;
+    }
+
 }

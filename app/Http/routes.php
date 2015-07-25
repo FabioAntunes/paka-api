@@ -1,34 +1,5 @@
 <?php
 
-/*
-|--------------------------------------------------------------------------
-| Application Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register all of the routes for an application.
-| It's a breeze. Simply tell Laravel the URIs it should respond to
-| and give it the controller to call when that URI is requested.
-|
-*/
-
-//Route::get('home', 'HomeController@index');
-//
-//Route::group(['prefix' => 'api'], function()
-//{
-//
-//	Route::resource('user','API\UserController', ['except' =>['create', 'edit', 'destroy']]);
-//	Route::get('categories/expenses','API\CategoriesController@expenses');
-//	Route::resource('categories','API\CategoriesController', ['except' =>['create', 'edit']]);
-//	Route::resource('expenses','API\ExpensesController', ['except' =>['create', 'edit']]);
-//	Route::resource('categories.expenses','API\CategoriesExpensesController', ['except' =>['create', 'edit']]);
-//	Route::resource('friends','API\FriendsController', ['except' =>['create', 'update', 'edit']]);
-//   Route::post('auth/login', ['as' => 'api.auth.login', 'uses' => 'API\AuthController@login']);
-//   Route::get('auth/refresh', ['as' => 'api.auth.refresh', 'uses' => 'API\AuthController@refreshToken']);
-//   Route::post('auth/reset', ['as' => 'api.auth.reset', 'uses' => 'API\AuthController@reset']);
-//
-//
-//});
-
 Route::group(['prefix' => 'api/v2', 'middleware' => 'cors'], function()
 {
 
@@ -36,6 +7,7 @@ Route::group(['prefix' => 'api/v2', 'middleware' => 'cors'], function()
     {
         Route::resource('user','V2\UserController', ['except' =>['create', 'edit', 'destroy']]);
         Route::resource('expenses','V2\ExpensesController');
+        Route::get('categories/dashboard',['as' => 'api.v2.categories.dashboard', 'uses' => 'V2\CategoriesController@dashboard']);
         Route::resource('categories','V2\CategoriesController');
         Route::resource('categories.expenses','V2\CategoriesExpensesController', ['except' =>['create', 'edit']]);
         Route::resource('friends','V2\FriendsController');
@@ -45,7 +17,12 @@ Route::group(['prefix' => 'api/v2', 'middleware' => 'cors'], function()
     });
 
     Route::post('auth/login', ['as' => 'api.v2.auth.login', 'uses' => 'V2\AuthController@login']);
+    Route::post('auth/register', ['as' => 'api.v2.auth.register', 'uses' => 'V2\AuthController@register']);
     Route::delete('auth/logout', ['as' => 'api.v2.auth.logout', 'uses' => 'V2\AuthController@logout']);
-    Route::post('auth/reset', ['as' => 'api.v2.auth.reset', 'uses' => 'V2\AuthController@reset']);
+    Route::post('auth/recover', ['as' => 'api.v2.auth.recover', 'uses' => 'V2\AuthController@recover']);
+
+    Route::controllers([
+        'password' => 'Auth\PasswordController',
+    ]);
 
 });

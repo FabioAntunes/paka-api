@@ -14,20 +14,24 @@ abstract class Transformer {
             if(array_key_exists('key', $keys)){
                 array_unshift($keys['key'], $user->name);
                 $url.='&key='.json_encode($keys['key']);
+
+                return $url;
             }else if(array_key_exists('startkey', $keys) && array_key_exists('endkey', $keys)){
                 array_unshift($keys['startkey'], $user->name);
                 array_unshift($keys['endkey'], $user->name);
                 $keys['endkey'][] = json_decode ("{}");
 
                 $url.='&startkey='.json_encode($keys['startkey']).'&endkey='.json_encode($keys['endkey']);
-            }else{
-                $defaultKeys =[
-                    'startkey' => [$user->name],
-                    'endkey' => [$user->name, json_decode ("{}")]
-                ];
-                $url.='&startkey='.json_encode($defaultKeys['startkey']).'&endkey='.json_encode($defaultKeys['endkey']);
+
+                return $url;
             }
         }
+
+        $defaultKeys =[
+            'startkey' => [$user->name],
+            'endkey' => [$user->name, json_decode ("{}")]
+        ];
+        $url.='&startkey='.json_encode($defaultKeys['startkey']).'&endkey='.json_encode($defaultKeys['endkey']);
 
         return $url;
     }

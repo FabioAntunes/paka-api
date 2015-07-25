@@ -35,6 +35,12 @@ class CouchDB {
 
     }
 
+    public function executeAdmin($method, $url, $options=[]){
+        $httpClient = new HttpClient();
+        $response = $httpClient->{$method}(env('COUCHDB_ADMIN').$url, $options);
+        return $this->parseStream($response);
+    }
+
 
     public function authenticate()
     {
@@ -71,11 +77,15 @@ class CouchDB {
 
     public function getUser()
     {
-        return $this->user;
+        return $this->user ? $this->user : $this->authenticate();
     }
 
     public function parseStream($response)
     {
         return json_decode($response->getBody()->getContents());
+    }
+
+    public function setHttpClient(HttpClient $httpClient){
+        $this->httpClient = $httpClient;
     }
 }

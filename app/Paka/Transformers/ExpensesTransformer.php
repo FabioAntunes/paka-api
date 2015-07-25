@@ -88,10 +88,15 @@ class ExpensesTransformer extends Transformer {
             $doc->shared = [];
             foreach ($expenseData['shared'] as $friend)
             {
-                $doc->shared[] = [
+                $shared = [
                     'friend_id' => $friend['friend_id'],
                     'value' => $friend['value'],
                 ];
+                if(array_key_exists('email', $friend)){
+                    $shared['email'] = $friend['email'];
+                }
+
+                $doc->shared[] = $shared;
             }
 
         }
@@ -146,14 +151,19 @@ class ExpensesTransformer extends Transformer {
         if(count($expenseData['shared']) > 1){
             foreach ($expenseData['shared'] as $friend)
             {
-                $expense->shared[] = [
+                $shared = [
                     'friend_id' => $friend['friend_id'],
                     'value' => $friend['value'],
                 ];
+                if(array_key_exists('email', $friend)){
+                    $shared['email'] = $friend['email'];
+                }
+
+                $expense->shared[] = $shared;
             }
         }
 
-        $response = CouchDB::executeAuth('post', $this->database.$id, [
+        $response = CouchDB::executeAuth('put', $this->database.$id, [
             'json' => $expense
         ]);
 

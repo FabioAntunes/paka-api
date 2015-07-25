@@ -58,7 +58,7 @@ class SeederController extends ApiController {
             'headers' => [
                 'Content-Type'=> 'application/json'
             ],
-            'body' => json_encode($categories)
+            'json' => $categories
         ]);
 
         return $this->respond($response->getReasonPhrase());

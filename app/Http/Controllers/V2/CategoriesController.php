@@ -24,8 +24,7 @@ class CategoriesController extends ApiController {
      */
     public function index(Request $request)
     {
-        $date = $this->parseDate($request);
-        $categories = $this->categoriesTransformer->allWithExpenses($date);
+        $categories = $this->categoriesTransformer->all();
         return $this->respond($categories);
     }
 
@@ -81,6 +80,19 @@ class CategoriesController extends ApiController {
     {
         $response = $this->categoriesTransformer->destroy($id);
         return $this->respond($response);
+    }
+
+    /**
+     * Display a listing of the resource for the dashboard.
+     *
+     * @param Request $request
+     * @return \Response
+     */
+    public function dashboard(Request $request)
+    {
+        $date = $this->parseDate($request);
+        $categories = $this->categoriesTransformer->allWithExpenses($date);
+        return $this->respond($categories);
     }
 
 }

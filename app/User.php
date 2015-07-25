@@ -9,12 +9,9 @@ use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 /**
  * App\User
  *
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Category[] $categories
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\User[] $friends
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Expense[] $expenses
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Token[] $tokens
  * @property integer $id
  * @property string $name
+ * @property string $username
  * @property string $email
  * @property string $password
  * @property string $remember_token
@@ -45,7 +42,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 	 *
 	 * @var array
 	 */
-	protected $fillable = ['name', 'email', 'password'];
+	protected $fillable = ['name', 'username', 'email', 'password'];
 
 	/**
 	 * The attributes excluded from the model's JSON form.
@@ -54,23 +51,4 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 	 */
 	protected $hidden = ['password', 'remember_token'];
 
-	public function categories()
-	{
-        return $this->hasMany('App\Category');
-    }
-
-    public function friends()
-    {
-        return $this->hasMany('App\Friend');
-    }
-
-    public function expenses()
-    {
-        return $this->hasMany('App\Expense');
-    }
-
-    public function devices()
-    {
-        return $this->hasMany('App\Device');
-    }
 }
