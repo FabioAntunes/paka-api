@@ -5,6 +5,8 @@ The Paka API is a RESTful API based on Laravel 5 developed by me as my final sch
 
 Along with Paka API another two repos were developed, [Paka-Web](https://github.com/FabioAntunes/paka-web) a single page application and [Paka-APP](https://github.com/FabioAntunes/paka-app) a Cordova mobile application.
 
+You will need a CouchDB and a MySQL server, just add those configs to the .env
+
 
 ### Installation:
   1. Clone the repo: <code>$ git clone git@github.com:FabioAntunes/paka-api.git</code>
